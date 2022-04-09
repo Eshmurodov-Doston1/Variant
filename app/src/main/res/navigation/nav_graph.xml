@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/authFragment">
+
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="uz.gxteam.variant.ui.AuthFragment"
+        android:label="fragment_auth"
+        tools:layout="@layout/fragment_auth" >
+        <action
+            android:id="@+id/action_authFragment_to_lockFragment"
+            app:destination="@id/lockFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/lockFragment"
+        android:name="uz.gxteam.variant.ui.lockView.LockFragment"
+        android:label="fragment_lock"
+        tools:layout="@layout/fragment_lock" >
+        <action
+            android:id="@+id/action_lockFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="uz.gxteam.variant.ui.mainView.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_mainFragment_to_generateFragment"
+            app:destination="@id/generateFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/generateFragment"
+        android:name="uz.gxteam.variant.ui.createStatement.GenerateFragment"
+        android:label="fragment_generate"
+        tools:layout="@layout/fragment_generate" />
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="uz.gxteam.variant.ui.chatView.ChatFragment"
+        android:label="fragment_chat"
+        tools:layout="@layout/fragment_chat" />
+</navigation>

@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Variant</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="phoneNumber">Номер телефона</string>
+    <string name="password">Пароль</string>
+    <string name="loading">Загрузка...</string>
+    <string name="no_phone">Номер телефона недоступен</string>
+    <string name="error_phone">Неверно введен номер телефона</string>
+    <string name="no_password">Пароль не введен</string>
+    <string name="no_req">У вас нету завершенных заявок</string>
+    <string name="no_internet">Нет подключения к интернету!</string>
+    <string name="password_length">Пароль должен содержать не менее 8 символов</string>
+    <string name="understandable">Понятно</string>
+    <string name="server_error">Сервер не работает</string>
+    <string name="app_password">Установка Пароля</string>
+    <string name="check_password">Подтвердить Пароль?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="fingerPrint">Доступ по отпечатку пальца</string>
+    <string name="fingerPrint1">Отмена</string>
+    <string name="password_write">Введите пароль</string>
+    <string name="main">Главное окно</string>
+    <string name="chat">Чаты</string>
+    <string name="settings">Настройки</string>
+    <string name="no_help">Пожалуйста, разрешите, иначе мы не сможем вам помочь</string>
+    <string name="cancel">Отмена</string>
+    <string name="permission">Все разрешения предоставлены</string>
+    <string name="gallery">Галерея</string>
+    <string name="camera">Камера</string>
+
+    <string name="preview_area">Preview Area</string>
+
+    <string name="please_wait">Пожалуйста, подождите</string>
+    <string name="photo_send_success">Опубликовано</string>
+    <string name="error_app">Ошибка</string>
+    <string name="no_data">Где-то ошибка ссылки была исправлена или есть такой глюк</string>
+    <string name="day_mode">Дневной режим</string>
+    <string name="night_mode">Ночной режим</string>
+    <string name="application_language">Язык приложения</string>
+    <string name="log_out">Выйти из учетной записи</string>
+    <string name="log_out_text">Вы действительно хотите выйти?</string>
+    <string name="error_password">Пароль введен неправильно</string>
+
+    <string name="passport_front">Паспорт фронт</string>
+</resources>
