@@ -3,24 +3,19 @@ package uz.gxteam.variant.ui.lockView
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.viewbinding.library.fragment.viewBinding
-import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import com.mikhaellopez.biometric.BiometricHelper
 import com.mikhaellopez.biometric.BiometricPromptInfo
 import com.mikhaellopez.biometric.BiometricType
 import dagger.hilt.android.AndroidEntryPoint
-import dev.skomlach.biometric.compat.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,38 +28,17 @@ import uz.gxteam.variant.databinding.FragmentLockBinding
 import uz.gxteam.variant.errors.errorInternet.errorNoClient
 import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.resourse.userResourse.UserDataResourse
+import uz.gxteam.variant.ui.baseFragment.BaseFragment
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import kotlin.coroutines.CoroutineContext
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [LockFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 @AndroidEntryPoint
-class LockFragment : Fragment(R.layout.fragment_lock),CoroutineScope {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+class LockFragment : BaseFragment(R.layout.fragment_lock) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
     private val authViewModel: AuthViewModel by viewModels()
     private val binding:FragmentLockBinding by viewBinding()
     lateinit var rvCalckAdapter: RvCalckAdapter
     lateinit var listNumber:ArrayList<String>
-    lateinit var listenerActivity:ListenerActivity
     var code:String=""
     var passWordApp:String=""
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,7 +47,7 @@ class LockFragment : Fragment(R.layout.fragment_lock),CoroutineScope {
 
 
 
-            launch {
+            launch(Dispatchers.Main) {
                 authViewModel.getUserData().collect{
                     when(it){
                         is UserDataResourse.SuccessUserResourse->{
@@ -86,7 +60,6 @@ class LockFragment : Fragment(R.layout.fragment_lock),CoroutineScope {
                                     var bundle = Bundle()
                                     findNavController().navigate(R.id.authFragment,bundle,navOpitions)
                                 }else{
-                                    Log.e("Error_Data", it.error.toString())
                                     errorNoClient(requireContext(),it.errorCode?:0)
                                 }
                             }else{
@@ -277,31 +250,4 @@ class LockFragment : Fragment(R.layout.fragment_lock),CoroutineScope {
         listNumber.add("0")
         listNumber.add("-2")
     }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        listenerActivity = activity as ListenerActivity
-    }
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment LockFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            LockFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main
 }

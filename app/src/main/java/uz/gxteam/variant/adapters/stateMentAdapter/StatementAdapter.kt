@@ -1,6 +1,5 @@
 package uz.gxteam.variant.adapters.stateMentAdapter
 
-import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import uz.gxteam.variant.R
 import uz.gxteam.variant.databinding.ItemMainBinding
-import uz.gxteam.variant.models.getApplications.Applications
 import uz.gxteam.variant.models.getApplications.DataApplication
 
 class StatementAdapter(var context:Context,var onItemClickListener:OnItemClickListener):ListAdapter<DataApplication,StatementAdapter.Vh>(MyDiffUtil()) {

@@ -42,7 +42,6 @@ class StatementVm @Inject constructor(
                         applicaitons.emit(ApplicationsResourse.ErrorApplications(it.errorBody()?.string(), internetConnection = true, errorCode = it.code()))
                     }
                 }
-
             }else{
                 applicaitons.emit(ApplicationsResourse.ErrorApplications(internetConnection = false))
             }

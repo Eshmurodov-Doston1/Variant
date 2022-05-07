@@ -130,5 +130,18 @@ class MySharedPreference @Inject constructor(@ApplicationContext private val con
 
 
 
+    var theme_color: String?
+        get() = preferences.getString("theme_color", "")
+        set(value) = preferences.edit {
+            if (value != null) { it.putString("theme_color", value) }
+        }
+
+    var ColorApp: String?
+        get() = preferences.getString("ColorApp", "")
+        set(value) = preferences.edit {
+            if (value != null) {
+                it.putString("ColorApp", value)
+            }
+        }
 
 }

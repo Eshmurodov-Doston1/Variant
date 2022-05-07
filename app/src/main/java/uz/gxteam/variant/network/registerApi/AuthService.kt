@@ -1,12 +1,10 @@
 package uz.gxteam.variant.network.registerApi
 
-import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
-import uz.gxteam.variant.databinding.LogOutBinding
 import uz.gxteam.variant.models.auth.reqAuth.ReqAuth
 import uz.gxteam.variant.models.auth.resAuth.ResAuth
 import uz.gxteam.variant.models.logOut.LogOut

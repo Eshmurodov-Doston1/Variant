@@ -111,4 +111,6 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:1.0.0"
     //compressor image
     implementation 'id.zelory:compressor:3.0.1'
+    //theme
+    implementation "com.github.skydoves:colorpickerview:2.2.4"
 }

@@ -121,8 +121,8 @@ class NotificationWork @AssistedInject constructor(
                     super.onFailure(webSocket, t, response)
                 }
             }
-            webSocketApp = client!!.newWebSocket(request, listener)
-            client!!.dispatcher.executorService.shutdown()
+            webSocketApp = client.newWebSocket(request, listener)
+            client.dispatcher.executorService.shutdown()
         }catch (e: Exception){
             e.printStackTrace()
         }

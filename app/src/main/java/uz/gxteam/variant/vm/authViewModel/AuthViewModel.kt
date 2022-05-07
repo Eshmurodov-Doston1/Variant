@@ -3,22 +3,17 @@ package uz.gxteam.variant.vm.authViewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import uz.gxteam.variant.database.entity.userData.UserDataEntity
 import uz.gxteam.variant.interceptor.MySharedPreference
 import uz.gxteam.variant.models.auth.reqAuth.ReqAuth
-import uz.gxteam.variant.network.registerApi.AuthService
 import uz.gxteam.variant.repository.authRepository.AuhtRepository
 import uz.gxteam.variant.resourse.authResourse.AuthResourse
 import uz.gxteam.variant.resourse.logOutResourse.LogOutResourse
 import uz.gxteam.variant.resourse.userResourse.UserDataResourse
 import uz.gxteam.variant.utils.NetworkHelper
 import javax.inject.Inject
-import kotlin.math.log
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -58,6 +53,8 @@ class AuthViewModel @Inject constructor(
         var userData = MutableStateFlow<UserDataResourse>(UserDataResourse.Loading)
         viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
+
+
                 var remoteUser = authRepository.userData("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
                 remoteUser.catch {
                     userData.emit(UserDataResourse.ErrorUserResourse(error = it.message,internetConnection = true))
@@ -67,6 +64,7 @@ class AuthViewModel @Inject constructor(
                             userData.emit(UserDataResourse.SuccessUserResourse(it))
                         }
                     }else{
+                        Log.e("ErrorData", it.errorBody()?.string().toString())
                         userData.emit(UserDataResourse.ErrorUserResourse(error = it.errorBody()?.string(),internetConnection = true, errorCode = it.code()))
                     }
                 }

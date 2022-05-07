@@ -31,7 +31,9 @@
         <entry key="app/src/main/res/drawable/icon.xml" value="0.165" />
         <entry key="app/src/main/res/drawable/icon_chat.xml" value="0.125" />
         <entry key="app/src/main/res/drawable/icon_settings.xml" value="0.22" />
+        <entry key="app/src/main/res/drawable/upload.xml" value="0.237" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/color_dialog.xml" value="0.25" />
         <entry key="app/src/main/res/layout/dialog_camera.xml" value="0.25" />
         <entry key="app/src/main/res/layout/dialog_parol.xml" value="0.25" />
         <entry key="app/src/main/res/layout/error_dialog.xml" value="0.25" />
@@ -45,12 +47,14 @@
         <entry key="app/src/main/res/layout/fragment_state_ment.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/fragment_statement.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/full_screen.xml" value="0.260546875" />
+        <entry key="app/src/main/res/layout/image_dialog.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/item_chat.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_chat_from.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/item_chat_to.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/item_lock.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_upload.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/item_view_pager.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/log_out.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/no_internet.xml" value="0.260546875" />
         <entry key="app/src/main/res/menu/bottom_navigation.xml" value="0.25" />

@@ -38,13 +38,13 @@ class NetworkModule {
             .client(okHttpClient)
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
-//            .addCallAdapterFactory(FlowCallAdapterFactory.create())
             .build()
     }
 
     @Provides
     @Singleton
     fun provideAuthService(retrofit: Retrofit):AuthService = retrofit.create(AuthService::class.java)
+
     @Provides
     @Singleton
     fun provideStatementService(retrofit: Retrofit):StatementService = retrofit.create(StatementService::class.java)

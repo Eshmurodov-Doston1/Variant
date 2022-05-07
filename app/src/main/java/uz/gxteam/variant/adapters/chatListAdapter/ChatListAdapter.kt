@@ -1,6 +1,5 @@
 package uz.gxteam.variant.adapters.chatListAdapter
 
-import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
@@ -9,10 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import uz.gxteam.variant.R
 import uz.gxteam.variant.databinding.ItemChatBinding
-import uz.gxteam.variant.databinding.ItemMainBinding
-import uz.gxteam.variant.models.getApplications.Applications
 import uz.gxteam.variant.models.getApplications.DataApplication
 
 class ChatListAdapter(var context:Context, var onItemClickListener:OnItemClickListener):ListAdapter<DataApplication,ChatListAdapter.Vh>(MyDiffUtil()) {

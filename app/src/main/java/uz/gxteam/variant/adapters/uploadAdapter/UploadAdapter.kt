@@ -20,9 +20,8 @@ class UploadAdapter(var onItemLongClick: OnIemLongClick):ListAdapter<UploadPhoto
                 crossfade(400)
                 transformations(RoundedCornersTransformation(30f))
             }
-            itemUploadBinding.image.setOnLongClickListener {
+            itemUploadBinding.image.setOnClickListener {
                 onItemLongClick.onUploadClick(uploadPhotos,position)
-                true
             }
         }
     }

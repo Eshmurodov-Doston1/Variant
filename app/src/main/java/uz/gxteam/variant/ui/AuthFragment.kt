@@ -1,25 +1,16 @@
 package uz.gxteam.variant.ui
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.viewbinding.library.fragment.viewBinding
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.widget.doAfterTextChanged
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import uz.gxteam.variant.ListenerActivity
 import uz.gxteam.variant.R
 import uz.gxteam.variant.databinding.FragmentAuthBinding
 import uz.gxteam.variant.errors.authError.AuthErrors
@@ -27,42 +18,17 @@ import uz.gxteam.variant.errors.errorInternet.authError
 import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.models.auth.reqAuth.ReqAuth
 import uz.gxteam.variant.resourse.authResourse.AuthResourse
+import uz.gxteam.variant.ui.baseFragment.BaseFragment
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
-import kotlin.coroutines.CoroutineContext
-
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AuthFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 @AndroidEntryPoint
-class AuthFragment : Fragment(R.layout.fragment_auth),CoroutineScope {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
+class AuthFragment : BaseFragment(R.layout.fragment_auth),CoroutineScope {
     private val binding:FragmentAuthBinding by viewBinding()
     private val authViewModel:AuthViewModel by viewModels()
-    lateinit var listenerActivity:ListenerActivity
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
 
-            if (!authViewModel.getSharedPreference().accessToken.equals("") && authViewModel.getSharedPreference().accessToken!=null ){
+            if (!authViewModel.getSharedPreference().accessToken.equals("") && authViewModel.getSharedPreference().accessToken!=null){
                 listenerActivity.showLoading()
                findNavController().navigate(R.id.action_authFragment_to_lockFragment)
             }
@@ -116,37 +82,4 @@ class AuthFragment : Fragment(R.layout.fragment_auth),CoroutineScope {
         }
     }
 
-    fun Activity.changeStatusBarColor(color: Int, isLight: Boolean) {
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.statusBarColor = color
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
-    }
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        listenerActivity = activity as ListenerActivity
-    }
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AuthFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AuthFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main
 }
