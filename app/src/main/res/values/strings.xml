@@ -6,6 +6,8 @@
     <string name="phoneNumber">Номер телефона</string>
     <string name="password">Пароль</string>
     <string name="loading">Загрузка...</string>
+    <string name="loading_upload">Загрузка...</string>
+
     <string name="no_phone">Номер телефона недоступен</string>
     <string name="error_phone">Неверно введен номер телефона</string>
     <string name="no_password">Пароль не введен</string>
@@ -46,4 +48,11 @@
     <string name="passport_front">Паспорт фронт</string>
     <string name="update_photo">Обновлять</string>
     <string name="save">Сохранять</string>
+
+    <array name="dot_colors">
+        <item>#03A9F4</item>
+        <item>#E65100</item>
+        <item>#FFBB00</item>
+    </array>
+
 </resources>

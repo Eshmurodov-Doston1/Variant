@@ -91,6 +91,7 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
                                 val dialogParolBinding = DialogParolBinding.inflate(LayoutInflater.from(requireContext()), null, false)
                                 dialogParolBinding.okBtn.setOnClickListener {
                                     authViewModel.getSharedPreference().passwordApp = code
+                                    listenerActivity.showLoading()
                                     findNavController().navigate(R.id.action_lockFragment_to_mainFragment)
                                     code=""
                                     create.dismiss()
@@ -215,18 +216,13 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
     private fun biometrick() {
         if (!authViewModel.getSharedPreference().passwordApp.equals("")){
             val biometricHelper = BiometricHelper(this@LockFragment)
-            // BiometricType = FACE, FINGERPRINT, IRIS, MULTIPLE or NONE
             val biometricType: BiometricType = biometricHelper.getBiometricType()
-            // Check if biometric is available on the device
-            // btnStart.visibility = if (biometricHelper.biometricEnable()) View.VISIBLE else View.GONE
             var promptInfo = BiometricPromptInfo(getString(R.string.fingerPrint),getString(R.string.fingerPrint1), confirmationRequired = true)
             biometricHelper.showBiometricPrompt(promptInfo,
                 onError = { errorCode: Int, errString: CharSequence ->
                     // Do something when error
-
                 }, onFailed = {
                     // Do something when failed
-
                 }, onSuccess = { result: BiometricPrompt.AuthenticationResult ->
                     // Do something when success
                     findNavController().navigate(R.id.action_lockFragment_to_mainFragment)

@@ -25,6 +25,7 @@ class MySharedPreference @Inject constructor(@ApplicationContext private val con
         edite.remove("refreshToken")
         edite.remove("tokenType")
 //        edite.remove("token_socet")
+        edite.remove("passwordApp")
         edite.apply()
     }
 

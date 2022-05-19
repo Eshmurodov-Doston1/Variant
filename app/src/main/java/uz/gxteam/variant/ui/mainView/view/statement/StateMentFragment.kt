@@ -1,6 +1,6 @@
 package uz.gxteam.variant.ui.mainView.view.statement
 
-import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import uz.gxteam.variant.ListenerActivity
 import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.stateMentAdapter.StatementAdapter
 import uz.gxteam.variant.databinding.FragmentStateMentBinding
@@ -30,8 +29,10 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            collapsing.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
-            collapsing.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
+            collapsing.setExpandedTitleTextAppearance(R.style.ExpandedAppBar)
+            collapsing.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar)
+
+
 
             stateMentAdapter = StatementAdapter(requireContext(),object:StatementAdapter.OnItemClickListener{
                 override fun onItemClick(dataApplication: DataApplication, position: Int) {

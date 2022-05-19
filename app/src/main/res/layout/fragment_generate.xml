@@ -91,6 +91,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:spanCount="2"
+                tools:listitem="@layout/item_upload"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
@@ -124,5 +125,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

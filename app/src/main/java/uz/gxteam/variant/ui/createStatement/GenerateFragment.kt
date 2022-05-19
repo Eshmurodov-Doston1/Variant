@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.*
 import android.media.ExifInterface
 import android.net.Uri
@@ -99,6 +100,8 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
             if (param3?.photo_status!! >= 4){
                 uploadBtn.isEnabled = false
             }
+
+
             uploadBtn.setOnClickListener {
                 PermissionX.init(activity)
                     .permissions(Manifest.permission.CAMERA)
@@ -112,7 +115,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             create.setView(dialogCameraBinding.root)
                             dialogCameraBinding.camera.setOnClickListener {
                                 var imageFile = createImageFile()
-                                photoURI = FileProvider.getUriForFile(root.context,BuildConfig.APPLICATION_ID,imageFile)
+                                photoURI = FileProvider.getUriForFile(requireContext(),BuildConfig.APPLICATION_ID,imageFile)
                                 getTakeImageContent.launch(photoURI)
                                 create.dismiss()
                             }
@@ -158,53 +161,59 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                                             uploadPhotos: UploadPhotos,
                                             position: Int
                                         ) {
-                                            var dialogApp = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
-                                            val create1 = dialogApp.create()
-                                            var cameraDialogBinding = DialogCameraBinding.inflate(LayoutInflater.from(requireContext()),null,false)
-                                            create1.setView(cameraDialogBinding.root)
-                                            uploadPhotosApp = uploadPhotos
-                                            cameraDialogBinding.camera.setOnClickListener {
-                                                var imageFile = createImageFile()
-                                                photoURI = FileProvider.getUriForFile(root.context,BuildConfig.APPLICATION_ID,imageFile)
-                                                getTakeImageContentUpdate.launch(photoURI)
-                                                create1.dismiss()
-                                                create.dismiss()
-                                            }
-                                            cameraDialogBinding.gallery.setOnClickListener {
-                                                picImageForNewGalleryUpdate()
-                                                create1.dismiss()
-                                                create.dismiss()
-                                            }
-                                            cameraDialogBinding.close.setOnClickListener {
-                                                create1.dismiss()
-                                            }
-                                            create1.show()
+                                            PermissionX.init(activity)
+                                                .permissions(Manifest.permission.CAMERA)
+                                                .onExplainRequestReason { scope, deniedList ->
+                                                    scope.showRequestReasonDialog(deniedList, getString(R.string.no_help), "OK", getString(R.string.cancel))
+                                                }.request { allGranted, grantedList, deniedList ->
+                                                    var dialogApp = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
+                                                    val create1 = dialogApp.create()
+                                                    var cameraDialogBinding = DialogCameraBinding.inflate(LayoutInflater.from(requireContext()),null,false)
+                                                    create1.setView(cameraDialogBinding.root)
+                                                    uploadPhotosApp = uploadPhotos
+                                                    cameraDialogBinding.camera.setOnClickListener {
+                                                        var imageFile = createImageFile()
+                                                        photoURI = FileProvider.getUriForFile(requireContext(),BuildConfig.APPLICATION_ID,imageFile)
+                                                        getTakeImageContentUpdate.launch(photoURI)
+                                                        create1.dismiss()
+                                                        create.dismiss()
+                                                    }
+                                                    cameraDialogBinding.gallery.setOnClickListener {
+                                                        picImageForNewGalleryUpdate()
+                                                        create1.dismiss()
+                                                        create.dismiss()
+                                                    }
+                                                    cameraDialogBinding.close.setOnClickListener {
+                                                        create1.dismiss()
+                                                    }
+                                                    create1.show()
+                                                }
                                         }
                                     },it.uploadPhotos?: emptyList())
+
                                     imageDialogBinding.viewPager2.setPageTransformer { page, position ->
-                                        if (position < -1){    // [-Infinity,-1)
-                                            // This page is way off-screen to the left.
+                                        if (position < -1){
                                             page.alpha = 0F
 
                                         }
-                                        else if (position <= 0) {    // [-1,0]
+                                        else if (position <= 0) {
                                             page.alpha = 1F
                                             page.pivotX = page.width.toFloat()
                                             page.rotationY = -90 * abs(position)
 
                                         }
-                                        else if (position <= 1){    // (0,1]
+                                        else if (position <= 1){
                                             page.alpha = 1F
                                             page.pivotX = 0F
                                             page.rotationY = 90 * Math.abs(position)
 
                                         }
-                                        else {    // (1,+Infinity]
-                                            // This page is way off-screen to the right.
+                                        else {
                                             page.alpha = 0F
 
                                         }
                                     }
+
                                     imageDialogBinding.viewPager2.adapter = viewPagerAdapter
                                     imageDialogBinding.viewPager2.setCurrentItem(position,false)
                                     //imageDialogBinding.image.load("$BASE_URL/${uploadPhotos.file_link}")
@@ -220,6 +229,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             uploadAdapter.submitList(it.uploadPhotos)
                             rvImage.adapter = uploadAdapter
                             rvImage.isNestedScrollingEnabled = false
+                            listenerActivity.uploadLoadingHide()
                         }
                         is UploadphotosResourse.ErrorUploadPhotos->{
                             spinKit.visibility = View.GONE
@@ -235,6 +245,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             }else{
                                 noInternet(requireContext())
                             }
+                            listenerActivity.uploadLoadingHide()
                         }
                     }
                 }
@@ -260,7 +271,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
             uploadImage(imagePath)
         }
     }
-    //Camera Update
 
 
     private val getTakeImageContentUpdate = registerForActivityResult(ActivityResultContracts.TakePicture()) {
@@ -286,31 +296,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         val date = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val externalFilesDir = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile("JPEG_$date",".jpg",externalFilesDir).apply { absolutePath }
-    }
-
-
-
-
-    private fun rotateImage(decodeFile: Bitmap, toFloat: Float): Bitmap {
-        val matrix = Matrix()
-        matrix.postRotate(toFloat)
-
-        return Bitmap.createBitmap(decodeFile,0,0,decodeFile.width,decodeFile.height,matrix,true)
-    }
-
-    private fun exiOrientationDegree(exifPositon:Int):Int {
-       return when(exifPositon){
-            ExifInterface.ORIENTATION_ROTATE_90->{
-              90
-            }
-            ExifInterface.ORIENTATION_ROTATE_180->{
-                180
-            }
-            ExifInterface.ORIENTATION_ROTATE_270->{
-                270
-            }
-           else->0
-        }
     }
 
     //Gallery
@@ -392,10 +377,12 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                 .addFileToUpload(imagePath, "photo") //Adding file
                 .subscribe(requireContext(),viewLifecycleOwner, delegate = object:
                     RequestObserverDelegate {
-                    override fun onCompleted(context: Context, uploadInfo: UploadInfo) {}
+                    override fun onCompleted(context: Context, uploadInfo: UploadInfo) {
+
+                    }
                     @SuppressLint("LongLogTag")
                     override fun onCompletedWhileNotObserving() {
-                        listenerActivity.showLoading()
+                        listenerActivity.uploadLoadingShow()
                     }
 
                     override fun onError(
@@ -408,7 +395,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                                 Toast.makeText(requireContext(), "Xatolik:${exception.message}", Toast.LENGTH_SHORT).show()
                             }
                             is UploadError -> {
-                                listenerActivity.hideLoading()
+                                listenerActivity.uploadLoadingHide()
                                 val fromJson = Gson().fromJson(exception.serverResponse.bodyString, ErrorUpload::class.java)
 
                                 messageError(fromJson.errors.message,requireContext())
@@ -421,7 +408,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
 
                     override fun onProgress(context: Context, uploadInfo: UploadInfo) {
-                        listenerActivity.showLoading()
+                        listenerActivity.uploadLoadingShow()
                     }
 
                     override fun onSuccess(
@@ -433,8 +420,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             clearMyFiles()
                             getApplicationData()
                             loadViewUpload()
-                            listenerActivity.hideLoading()
-                        }
+                          }
                     }
 
                 })
@@ -466,6 +452,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                              }else{
                                  noInternet(requireContext())
                              }
+                                listenerActivity.uploadLoadingHide()
                             }
                         }
                     }
@@ -516,7 +503,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                     override fun onCompleted(context: Context, uploadInfo: UploadInfo) {}
                     @SuppressLint("LongLogTag")
                     override fun onCompletedWhileNotObserving() {
-                        listenerActivity.showLoading()
+                        listenerActivity.uploadLoadingShow()
                     }
 
                     override fun onError(
@@ -529,7 +516,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                                 Toast.makeText(requireContext(), "Xatolik:${exception.message}", Toast.LENGTH_SHORT).show()
                             }
                             is UploadError -> {
-                                listenerActivity.hideLoading()
+                                listenerActivity.uploadLoadingHide()
 
                                 Log.e("Upload_Post", uploadPhotosApp.toString())
 
@@ -548,7 +535,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
 
                     override fun onProgress(context: Context, uploadInfo: UploadInfo) {
-                        listenerActivity.showLoading()
+                        listenerActivity.uploadLoadingShow()
                     }
 
                     override fun onSuccess(
@@ -560,7 +547,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             clearMyFiles()
                             getApplicationData()
                             loadViewUpload()
-                            listenerActivity.hideLoading()
+                            listenerActivity.uploadLoadingHide()
                         }
                     }
 

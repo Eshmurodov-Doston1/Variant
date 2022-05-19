@@ -37,4 +37,8 @@
     <color name="collepsing_color">#FFFFFFFF</color>
     <color name="item_color_app">#FFFFFFFF</color>
     <color name="edite_text_back">#FFFFFFFF</color>
+    <color name="upload_progress_color">#7000FF</color>
+    <color name="upload_progress_color1">#667000FF</color>
+    <color name="statusbar_color">#FFFFFFFF</color>
+
 </resources>

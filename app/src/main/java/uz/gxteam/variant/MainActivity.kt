@@ -1,14 +1,16 @@
 package uz.gxteam.variant
 
-import android.graphics.Color
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.*
+import android.view.View
 import android.viewbinding.library.activity.viewBinding
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.findNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -16,10 +18,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import uz.gxteam.variant.databinding.ActivityMainBinding
-import uz.gxteam.variant.models.getApplications.DataApplication
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import uz.gxteam.variant.workManager.NotificationWork
 import kotlin.coroutines.CoroutineContext
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
@@ -30,23 +32,14 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
         setContentView(binding.root)
         window.statusBarColor = resources.getColor(R.color.background)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-
+        hideSystemUI()
         var request = OneTimeWorkRequestBuilder<NotificationWork>().build()
         WorkManager.getInstance(this).enqueue(request)
 
 
 
-        if (authViewModel.getSharedPreference().theme==true){
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE
-            window.statusBarColor = Color.parseColor("#0D1A28")
-            window.navigationBarColor = Color.parseColor("#0D1A28")
-        }else{
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            window.statusBarColor = Color.parseColor("#FFFFFF")
-            window.navigationBarColor = Color.parseColor("#FFFFFF")
-        }
+
+
 
         /**
         1) upload Loading percent
@@ -79,6 +72,13 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
         binding.include.loadingView.visibility  = View.GONE
     }
 
+    override fun uploadLoadingShow() {
+        binding.includeUploadLoading.loadingView.visibility = View.VISIBLE
+    }
+
+    override fun uploadLoadingHide() {
+        binding.includeUploadLoading.loadingView.visibility = View.INVISIBLE
+    }
 
 
     override fun onBackPressed() {
@@ -96,4 +96,34 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
+
+
+    private fun hideSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window,
+            window.decorView.findViewById(android.R.id.content)).let { controller ->
+
+
+
+            if (authViewModel.getSharedPreference().theme==true){
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE
+                window.statusBarColor = resources.getColor(R.color.statusbar_color)
+            window.navigationBarColor =resources.getColor(R.color.statusbar_color)
+            }else{
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                window.statusBarColor =resources.getColor(R.color.statusbar_color)
+            window.navigationBarColor = resources.getColor(R.color.statusbar_color)
+            }
+
+            controller.hide(WindowInsetsCompat.Type.navigationBars())
+
+            // When the screen is swiped up at the bottom
+            // of the application, the navigationBar shall
+            // appear for some time
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
 }

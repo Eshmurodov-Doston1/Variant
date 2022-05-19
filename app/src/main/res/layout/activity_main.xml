@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/cons_main"
     tools:context=".MainActivity">
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment"
@@ -17,4 +18,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         layout="@layout/full_screen"/>
+
+
+    <include
+        android:id="@+id/include_upload_loading"
+        layout="@layout/upload_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

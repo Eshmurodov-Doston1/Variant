@@ -88,6 +88,7 @@ class AuthViewModel @Inject constructor(
                     logOut.emit(LogOutResourse.ErrorLogOut(error = it.message,internetConnection = true))
                 }.collect{
                     if (it.isSuccessful){
+                        mySharedPreference.clear()
                         logOut.emit(LogOutResourse.SuccessLogOut(it.body()))
                     }else{
                         logOut.emit(LogOutResourse.ErrorLogOut(error = it.errorBody()?.string(),internetConnection = true, errorCode = it.code()))

@@ -68,6 +68,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
     //coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
+
     //Room
     def roomVersion = "2.4.2"
     implementation "androidx.room:room-runtime:$roomVersion"
@@ -113,4 +114,7 @@ dependencies {
     implementation 'id.zelory:compressor:3.0.1'
     //theme
     implementation "com.github.skydoves:colorpickerview:2.2.4"
+    // animation dot
+    implementation 'com.github.bhargavms:DotLoader:1.1.1'
+
 }

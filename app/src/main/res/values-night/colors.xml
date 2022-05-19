@@ -36,5 +36,8 @@
     <color name="icon_color">#06D3C0</color>
     <color name="collepsing_color">#FFFFFFFF</color>
     <color name="item_color_app">#202C39</color>
+    <color name="upload_progress_color">#FFFFFFFF</color>
+    <color name="upload_progress_color1">#81FFFFFF</color>
 
+    <color name="statusbar_color">#0D1A28</color>
 </resources>
