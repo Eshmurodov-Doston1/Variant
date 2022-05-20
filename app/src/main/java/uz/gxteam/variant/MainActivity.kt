@@ -8,9 +8,6 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.findNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -32,27 +29,9 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
         setContentView(binding.root)
         window.statusBarColor = resources.getColor(R.color.background)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        hideSystemUI()
+        systemUI()
         var request = OneTimeWorkRequestBuilder<NotificationWork>().build()
         WorkManager.getInstance(this).enqueue(request)
-
-
-
-
-
-
-        /**
-        1) upload Loading percent
-
-        2) auth loginlarni qaytadan kurib chiqish parol yangilash
-
-        3) colorlarni joyiga tushirish applicationni maxsimal tez ishlaydigan qilish
-
-        4) application socket
-
-        5) IOS -> appstor
-         **/
-
     }
 
 
@@ -98,31 +77,17 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
         get() = Dispatchers.Main
 
 
-    private fun hideSystemUI() {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window,
-            window.decorView.findViewById(android.R.id.content)).let { controller ->
-
-
-
-            if (authViewModel.getSharedPreference().theme==true){
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE
-                window.statusBarColor = resources.getColor(R.color.statusbar_color)
+    private fun systemUI() {
+        if (authViewModel.getSharedPreference().theme==true){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE
+            window.statusBarColor = resources.getColor(R.color.statusbar_color)
             window.navigationBarColor =resources.getColor(R.color.statusbar_color)
-            }else{
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                window.statusBarColor =resources.getColor(R.color.statusbar_color)
+        }else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            window.statusBarColor =resources.getColor(R.color.statusbar_color)
             window.navigationBarColor = resources.getColor(R.color.statusbar_color)
-            }
-
-            controller.hide(WindowInsetsCompat.Type.navigationBars())
-
-            // When the screen is swiped up at the bottom
-            // of the application, the navigationBar shall
-            // appear for some time
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 

@@ -13,6 +13,7 @@ import javax.inject.Inject
 class ViewViewModel @Inject constructor(
     private val mySharedPreference: MySharedPreference
 ):ViewModel() {
+
     var theme = MutableLiveData<String>()
     fun getThemeLive():LiveData<String>{
         theme.postValue(mySharedPreference.theme_color)

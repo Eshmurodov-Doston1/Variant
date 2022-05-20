@@ -1,21 +1,15 @@
 package uz.gxteam.variant.ui.chatView
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.viewbinding.library.fragment.viewBinding
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -23,7 +17,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.WebSocket
 import okio.ByteString
-import org.java_websocket.WebSocketListener
 import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.chatListAdapter.chat.ChatAdapter
 import uz.gxteam.variant.databinding.FragmentChatBinding
@@ -42,18 +35,22 @@ import uz.gxteam.variant.socket.connectSocket.ConnectSocket
 import uz.gxteam.variant.socket.dataSocket.DataSocket
 import uz.gxteam.variant.socket.socketMessage.SocketMessage
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.AUTH_WST
+import uz.gxteam.variant.utils.AppConstant.CHAT_MEW_MESSAGE
+import uz.gxteam.variant.utils.AppConstant.CLOSE_WST_TEXT
+import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
+import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
+import uz.gxteam.variant.utils.AppConstant.SUBSCRIBE_WST
+import uz.gxteam.variant.utils.AppConstant.WEBSOCKET_URL
+import uz.gxteam.variant.utils.AppConstant.WST_CHANNEL
+import uz.gxteam.variant.utils.AppConstant.WST_DATA
+import uz.gxteam.variant.utils.AppConstant.WST_EVENT
+import uz.gxteam.variant.utils.AppConstant.ZERO
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import uz.gxteam.variant.vm.statementVm.StatementVm
 import uz.gxteam.variant.workManager.NotificationWork
 import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.coroutines.CoroutineContext
-
-
-
-private const val ARG_PARAM3 = "dataApplication"
 
 @AndroidEntryPoint
 class ChatFragment : BaseFragment(R.layout.fragment_chat) {
@@ -62,7 +59,7 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param3 = it.getSerializable(ARG_PARAM3) as DataApplication
+            param3 = it.getSerializable(DATAAPPLICATION) as DataApplication
         }
     }
 
@@ -72,7 +69,7 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
     lateinit var chatAdapter:ChatAdapter
     lateinit var listMessage:ArrayList<Message>
     lateinit var gson:Gson
-    var count = 0
+    var count = ZERO
     var webSocketApp: WebSocket? = null
     var client: OkHttpClient? = null
     var userId:Int=-1
@@ -83,13 +80,9 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
             listMessage = ArrayList()
             loadData()
             authViewModel.getSharedPreference().oldToken = param3?.token
-
-
             var request = OneTimeWorkRequestBuilder<NotificationWork>().build()
             WorkManager.getInstance(requireContext())
                 .enqueue(request)
-
-
             back.setOnClickListener {
                 findNavController().popBackStack()
             }
@@ -127,8 +120,6 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
             socketData()
         }
     }
-
-
     fun loadData(){
         var userData = gson.fromJson(authViewModel.getSharedPreference().userData,UserData::class.java)
         userId = userData.id
@@ -170,13 +161,9 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
             }
         }
     }
-
-
-
-
     fun socketData(){
         try {
-            val request: okhttp3.Request = okhttp3.Request.Builder().url("ws://web.variantgroup.uz:6001/app/mykey?protocol=7&client=js&version=7.0.6&flash=false").build()
+            val request: okhttp3.Request = okhttp3.Request.Builder().url(WEBSOCKET_URL).build()
             var listener = object:okhttp3.WebSocketListener(){
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -188,11 +175,11 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                     if (count==0){
                         val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
                         launch {
-                            stamentVm.broadCastAuth(SendSocketData("private-ChatNewMessage.${param3?.token}", dataSocket.socket_id))
+                            stamentVm.broadCastAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${param3?.token}", dataSocket.socket_id))
                                 .collect{
                                     when(it){
                                         is BroadCastAuthResourse.SuccessBroadCast->{
-                                            webSocket.send(" {\"event\":\"pusher:subscribe\",\"data\":{\"auth\":\"${it.resSocket?.auth}\",\"channel\":\"private-ChatNewMessage.${param3?.token}\"}}")
+                                            webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.resSocket?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${param3?.token}\"}}")
                                             count++
                                         }
                                         is BroadCastAuthResourse.ErrorBroadCast->{
@@ -214,7 +201,6 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                     }else{
                         if (socketData.data!=null){
                             val messageSocket = gson.fromJson(socketData.data, SocketMessage::class.java)
-                            Log.e("Messages", messageSocket.toString())
                             GlobalScope.launch(Dispatchers.Main) {
                                 if (messageSocket.type==1){
                                     listMessage.add(Message(messageSocket.app_id,listMessage.size+1,messageSocket.message,null,messageSocket.app_id,messageSocket.type,-2))
@@ -245,16 +231,13 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
             }
             webSocketApp = client!!.newWebSocket(request, listener)
             client!!.dispatcher.executorService.shutdown()
+
         }catch (e:Exception){
             e.printStackTrace()
         }
     }
-
-
-
-
     override fun onDestroy() {
         super.onDestroy()
-       webSocketApp?.close(1000,"Close Socket")
+       webSocketApp?.close(1000,CLOSE_WST_TEXT)
     }
 }

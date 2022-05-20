@@ -9,6 +9,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import net.gotev.uploadservice.UploadServiceConfig
+import uz.gxteam.variant.utils.AppConstant.TESTCHANNEL
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -31,7 +32,7 @@ class App:Application(),Configuration.Provider{
         if (Build.VERSION.SDK_INT >= 26) {
             val channel = NotificationChannel(
                 notificationChannelID,
-                "TestApp Channel",
+                TESTCHANNEL,
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

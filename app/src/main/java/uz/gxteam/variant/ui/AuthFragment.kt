@@ -19,6 +19,7 @@ import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.models.auth.reqAuth.ReqAuth
 import uz.gxteam.variant.resourse.authResourse.AuthResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.PHONE_UZB
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 @AndroidEntryPoint
 class AuthFragment : BaseFragment(R.layout.fragment_auth),CoroutineScope {
@@ -27,7 +28,7 @@ class AuthFragment : BaseFragment(R.layout.fragment_auth),CoroutineScope {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-
+            var gson = Gson()
             if (!authViewModel.getSharedPreference().accessToken.equals("") && authViewModel.getSharedPreference().accessToken!=null){
                 listenerActivity.showLoading()
                findNavController().navigate(R.id.action_authFragment_to_lockFragment)
@@ -40,11 +41,8 @@ class AuthFragment : BaseFragment(R.layout.fragment_auth),CoroutineScope {
                 }
             }
 
-
-
-            var gson = Gson()
             login.setOnClickListener {
-                val phoneNumber = "998${phoneNumber.text.toString().trim()}"
+                val phoneNumber = "${PHONE_UZB}${phoneNumber.text.toString().trim()}"
                 val password = password.text.toString().trim()
                 if (phoneNumber.isEmpty()){
                     textInput.error = getString(R.string.no_phone)

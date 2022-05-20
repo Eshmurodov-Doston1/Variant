@@ -21,14 +21,14 @@ android {
     buildTypes {
 
         debug {
-            buildConfigField "String", "BASE_URL", "\"https://web.variantgroup.uz\""
+            buildConfigField "String", "BASE_URL", "\"http://web.variantgroup.uz\""
         }
         // developer -> development
         // production ->
 
 
         release {
-            buildConfigField "String", "BASE_URL", "\"https://web.variantgroup.uz\""
+            buildConfigField "String", "BASE_URL", "\"http://web.variantgroup.uz\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

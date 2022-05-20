@@ -1,6 +1,5 @@
 package uz.gxteam.variant.vm.authViewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,8 +52,6 @@ class AuthViewModel @Inject constructor(
         var userData = MutableStateFlow<UserDataResourse>(UserDataResourse.Loading)
         viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
-
-
                 var remoteUser = authRepository.userData("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
                 remoteUser.catch {
                     userData.emit(UserDataResourse.ErrorUserResourse(error = it.message,internetConnection = true))
@@ -64,7 +61,6 @@ class AuthViewModel @Inject constructor(
                             userData.emit(UserDataResourse.SuccessUserResourse(it))
                         }
                     }else{
-                        Log.e("ErrorData", it.errorBody()?.string().toString())
                         userData.emit(UserDataResourse.ErrorUserResourse(error = it.errorBody()?.string(),internetConnection = true, errorCode = it.code()))
                     }
                 }
@@ -75,9 +71,6 @@ class AuthViewModel @Inject constructor(
         return userData
     }
 
-    fun getUserdatabase():AuhtRepository{
-        return authRepository
-    }
 
     fun logOut():StateFlow<LogOutResourse>{
         var logOut = MutableStateFlow<LogOutResourse>(LogOutResourse.Loading)

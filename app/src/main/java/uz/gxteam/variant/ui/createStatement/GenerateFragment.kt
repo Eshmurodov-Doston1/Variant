@@ -5,9 +5,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.*
-import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -19,14 +16,12 @@ import android.viewbinding.library.fragment.viewBinding
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -43,7 +38,6 @@ import net.gotev.uploadservice.observer.request.RequestObserverDelegate
 import net.gotev.uploadservice.protocols.multipart.MultipartUploadRequest
 import uz.gxteam.variant.BuildConfig
 import uz.gxteam.variant.BuildConfig.BASE_URL
-import uz.gxteam.variant.ListenerActivity
 import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.imageViewPagerAdapter.ViewPagerAdapter
 import uz.gxteam.variant.adapters.uploadAdapter.UploadAdapter
@@ -60,6 +54,7 @@ import uz.gxteam.variant.models.uploadPhotos.UploadPhotos
 import uz.gxteam.variant.resourse.applicationResourse.ApplicationResourse
 import uz.gxteam.variant.resourse.uploadPhotos.UploadphotosResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import uz.gxteam.variant.vm.statementVm.StatementVm
 import java.io.File
@@ -67,11 +62,9 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
 
-private const val ARG_PARAM3 = "dataApplication"
 
 @AndroidEntryPoint
 class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
@@ -80,7 +73,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param3 = it.getSerializable(ARG_PARAM3) as DataApplication
+            param3 = it.getSerializable(DATAAPPLICATION) as DataApplication
         }
     }
 
@@ -115,7 +108,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             create.setView(dialogCameraBinding.root)
                             dialogCameraBinding.camera.setOnClickListener {
                                 var imageFile = createImageFile()
-                                photoURI = FileProvider.getUriForFile(requireContext(),BuildConfig.APPLICATION_ID,imageFile)
+                                photoURI = FileProvider.getUriForFile(root.context,BuildConfig.APPLICATION_ID,imageFile)
                                 getTakeImageContent.launch(photoURI)
                                 create.dismiss()
                             }
@@ -216,7 +209,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
                                     imageDialogBinding.viewPager2.adapter = viewPagerAdapter
                                     imageDialogBinding.viewPager2.setCurrentItem(position,false)
-                                    //imageDialogBinding.image.load("$BASE_URL/${uploadPhotos.file_link}")
                                     create.show()
                                 }
                             })
@@ -245,7 +237,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             }else{
                                 noInternet(requireContext())
                             }
-                            listenerActivity.uploadLoadingHide()
                         }
                     }
                 }
@@ -397,7 +388,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             is UploadError -> {
                                 listenerActivity.uploadLoadingHide()
                                 val fromJson = Gson().fromJson(exception.serverResponse.bodyString, ErrorUpload::class.java)
-
                                 messageError(fromJson.errors.message,requireContext())
                             }
                             else -> {}
@@ -420,7 +410,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             clearMyFiles()
                             getApplicationData()
                             loadViewUpload()
-                          }
+                        }
                     }
 
                 })
@@ -452,7 +442,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                              }else{
                                  noInternet(requireContext())
                              }
-                                listenerActivity.uploadLoadingHide()
                             }
                         }
                     }
@@ -517,13 +506,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             }
                             is UploadError -> {
                                 listenerActivity.uploadLoadingHide()
-
-                                Log.e("Upload_Post", uploadPhotosApp.toString())
-
-                                Log.e("Error", exception.serverResponse.bodyString)
-
                                 val fromJson = Gson().fromJson(exception.serverResponse.bodyString, ErrorUpload::class.java)
-
                                 messageError(fromJson.errors.message,requireContext())
 
                             }

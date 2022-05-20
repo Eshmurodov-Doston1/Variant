@@ -9,6 +9,9 @@ import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.viewPagerAdapter.MainViewPagerAdapter
 import uz.gxteam.variant.databinding.FragmentMainBinding
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.ONE
+import uz.gxteam.variant.utils.AppConstant.TWO
+import uz.gxteam.variant.utils.AppConstant.ZERO
 
 @AndroidEntryPoint
 class MainFragment : BaseFragment(R.layout.fragment_main) {
@@ -20,18 +23,17 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
         binding.apply {
             listenerActivity.hideLoading()
             isViewCreate = true
-
             viewPager2.registerOnPageChangeCallback(object:ViewPager2.OnPageChangeCallback(){
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
                     when(position){
-                        0->{
+                        ZERO->{
                             bottomNavigation.menu.findItem(R.id.home).isChecked=true
                         }
-                        1->{
+                        ONE->{
                             bottomNavigation.menu.findItem(R.id.chat).isChecked=true
                         }
-                        2->{
+                        TWO->{
                             bottomNavigation.menu.findItem(R.id.settings).isChecked=true
                         }
                     }
@@ -40,18 +42,17 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
             bottomNavigation.setOnItemSelectedListener {
                 when(it.itemId){
                     R.id.home->{
-                        viewPager2.currentItem=0
+                        viewPager2.currentItem= ZERO
                     }
                     R.id.chat->{
-                        viewPager2.currentItem=1
+                        viewPager2.currentItem= ONE
                     }
                     R.id.settings->{
-                        viewPager2.currentItem=2
+                        viewPager2.currentItem= TWO
                     }
                 }
                 true
             }
-
             mainViewPagerAdapter = MainViewPagerAdapter(requireActivity())
             viewPager2.adapter = mainViewPagerAdapter
 

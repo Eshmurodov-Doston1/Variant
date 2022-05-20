@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import uz.gxteam.variant.interceptor.MySharedPreference
 import uz.gxteam.variant.models.getApplication.reqApplication.SendToken
@@ -157,4 +156,6 @@ class StatementVm @Inject constructor(
         }
         return uploadPhotos
     }
+
+    fun getShared() =  mySharedPreference
 }

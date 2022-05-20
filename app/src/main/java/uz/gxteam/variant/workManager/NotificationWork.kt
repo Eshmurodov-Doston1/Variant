@@ -31,6 +31,15 @@ import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.connectSocket.ConnectSocket
 import uz.gxteam.variant.socket.dataSocket.DataSocket
 import uz.gxteam.variant.socket.socketMessage.SocketMessage
+import uz.gxteam.variant.utils.AppConstant.AUTH_WST
+import uz.gxteam.variant.utils.AppConstant.CHAT_MEW_MESSAGE
+import uz.gxteam.variant.utils.AppConstant.COMPANYNAME
+import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
+import uz.gxteam.variant.utils.AppConstant.SUBSCRIBE_WST
+import uz.gxteam.variant.utils.AppConstant.WEBSOCKET_URL
+import uz.gxteam.variant.utils.AppConstant.WST_CHANNEL
+import uz.gxteam.variant.utils.AppConstant.WST_DATA
+import uz.gxteam.variant.utils.AppConstant.WST_EVENT
 
 
 @HiltWorker
@@ -52,7 +61,7 @@ class NotificationWork @AssistedInject constructor(
         var gson = Gson()
         var client = OkHttpClient()
         try {
-            val request: okhttp3.Request = okhttp3.Request.Builder().url("ws://web.variantgroup.uz:6001/app/mykey?protocol=7&client=js&version=7.0.6&flash=false").build()
+            val request: okhttp3.Request = okhttp3.Request.Builder().url(WEBSOCKET_URL).build()
             var listener = object:okhttp3.WebSocketListener(){
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -64,10 +73,10 @@ class NotificationWork @AssistedInject constructor(
                     if (count==0){
                         val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
                         GlobalScope.launch(Dispatchers.IO){
-                            stateMentRepository.broadCastingAuth(SendSocketData("private-ChatNewMessage.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference?.oldToken}")
+                            stateMentRepository.broadCastingAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference.oldToken}")
                                 .collect{
                                     if (it.isSuccessful){
-                                        webSocket.send(" {\"event\":\"pusher:subscribe\",\"data\":{\"auth\":\"${it.body()?.auth}\",\"channel\":\"private-ChatNewMessage.${mySharedPreference?.oldToken}\"}}")
+                                        webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.body()?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
                                         count++
                                     }
                                 }
@@ -88,14 +97,13 @@ class NotificationWork @AssistedInject constructor(
                                         .setContentIntent(resultPendingIntent)
                                         .setAutoCancel(true)
                                         .build()
-                                   // notificationCompat.setDefaults(Notification.DEFAULT_SOUND);
-
 
                                     val notificationManager = applicationContext.getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        val descriptionText ="Dostonbek Eshmurodov"
+                                        val descriptionText = COMPANYNAME
                                         val importance = NotificationManager.IMPORTANCE_HIGH
-                                        val channel = NotificationChannel(CHANNEL_ID, "onAttach.getText(R.string.update)", importance).apply { description = descriptionText as String?
+                                        val channel = NotificationChannel(CHANNEL_ID, COMPANYNAME, importance).apply { description =
+                                            descriptionText
                                         }
                                         notificationManager.createNotificationChannel(channel)
                                     }

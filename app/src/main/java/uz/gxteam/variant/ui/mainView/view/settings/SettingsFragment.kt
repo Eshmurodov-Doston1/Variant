@@ -18,6 +18,8 @@ import uz.gxteam.variant.errors.errorInternet.errorNoClient
 import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.resourse.logOutResourse.LogOutResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
+import uz.gxteam.variant.utils.AppConstant.ZERO
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 
 @AndroidEntryPoint
@@ -66,13 +68,13 @@ class SettingsFragment : BaseFragment(R.layout.fragment_settings) {
                                 is LogOutResourse.ErrorLogOut->{
                                     listenerActivity.hideLoading()
                                     if (it.internetConnection==true){
-                                        if (it.errorCode==401){
+                                        if (it.errorCode==UNAUTHCODE){
                                             var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
                                                 .build()
                                             var bundle = Bundle()
                                             findNavController().navigate(R.id.authFragment,bundle,navOpitions)
                                         }else{
-                                            errorNoClient(requireContext(),it.errorCode?:0)
+                                            errorNoClient(requireContext(),it.errorCode?:ZERO)
                                         }
                                     }else{
                                         noInternet(requireContext())

@@ -16,6 +16,8 @@ import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.models.getApplications.DataApplication
 import uz.gxteam.variant.resourse.stateMentApplications.ApplicationsResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
+import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
 import uz.gxteam.variant.vm.statementVm.StatementVm
 
 @AndroidEntryPoint
@@ -32,7 +34,7 @@ class ChatListFragment : BaseFragment(R.layout.fragment_chat_list) {
             chatListAdapter = ChatListAdapter(requireContext(),object:ChatListAdapter.OnItemClickListener{
                 override fun onItemClick(dataApplication: DataApplication, position: Int) {
                     var bundle = Bundle()
-                    bundle.putSerializable("dataApplication",dataApplication)
+                    bundle.putSerializable(DATAAPPLICATION,dataApplication)
                     findNavController().navigate(R.id.chatFragment,bundle)
                 }
             })
@@ -65,7 +67,7 @@ class ChatListFragment : BaseFragment(R.layout.fragment_chat_list) {
                         is ApplicationsResourse.ErrorApplications->{
                             spinKit.visibility = View.GONE
                             if (it.internetConnection==true){
-                                if (it.errorCode==401){
+                                if (it.errorCode== UNAUTHCODE){
                                     var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
                                         .build()
                                     var bundle = Bundle()

@@ -29,6 +29,18 @@ import uz.gxteam.variant.errors.errorInternet.errorNoClient
 import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.resourse.userResourse.UserDataResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.EIGHT
+import uz.gxteam.variant.utils.AppConstant.FIVE
+import uz.gxteam.variant.utils.AppConstant.FOURE
+import uz.gxteam.variant.utils.AppConstant.MINUS_ONE
+import uz.gxteam.variant.utils.AppConstant.MINUS_TWO
+import uz.gxteam.variant.utils.AppConstant.NINE
+import uz.gxteam.variant.utils.AppConstant.ONE
+import uz.gxteam.variant.utils.AppConstant.SEVEN
+import uz.gxteam.variant.utils.AppConstant.SIX
+import uz.gxteam.variant.utils.AppConstant.THREE
+import uz.gxteam.variant.utils.AppConstant.TWO
+import uz.gxteam.variant.utils.AppConstant.ZERO
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import kotlin.coroutines.CoroutineContext
 
@@ -44,10 +56,7 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-
-
-
-            launch(Dispatchers.Main) {
+            launch {
                 authViewModel.getUserData().collect{
                     when(it){
                         is UserDataResourse.SuccessUserResourse->{
@@ -69,17 +78,11 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
                     }
                 }
             }
-
-
-
             passWordApp = authViewModel.getSharedPreference().passwordApp.toString()
-
             if (passWordApp != ""){
                 namePage.text =getString(R.string.password_write)
             }
-
             loadNumber()
-
             rvCalckAdapter = RvCalckAdapter(object:RvCalckAdapter.OnItemClickListener{
                 override fun onItemClick(str: String, position: Int) {
                     if (code.length<=4) {
@@ -233,17 +236,17 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
 
     private fun loadNumber() {
         listNumber = ArrayList()
-        listNumber.add("1")
-        listNumber.add("2")
-        listNumber.add("3")
-        listNumber.add("4")
-        listNumber.add("5")
-        listNumber.add("6")
-        listNumber.add("7")
-        listNumber.add("8")
-        listNumber.add("9")
-        listNumber.add("-1")
-        listNumber.add("0")
-        listNumber.add("-2")
+        listNumber.add(ONE.toString())
+        listNumber.add(TWO.toString())
+        listNumber.add(THREE.toString())
+        listNumber.add(FOURE.toString())
+        listNumber.add(FIVE.toString())
+        listNumber.add(SIX.toString())
+        listNumber.add(SEVEN.toString())
+        listNumber.add(EIGHT.toString())
+        listNumber.add(NINE.toString())
+        listNumber.add(MINUS_ONE.toString())
+        listNumber.add(ZERO.toString())
+        listNumber.add(MINUS_TWO.toString())
     }
 }
