@@ -1,6 +1,7 @@
 package uz.gxteam.variant.ui.mainView.view.statement
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
 import androidx.fragment.app.viewModels
@@ -9,6 +10,8 @@ import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -28,6 +31,7 @@ import uz.gxteam.variant.socket.dataSocket.DataSocket
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
 import uz.gxteam.variant.utils.AppConstant
 import uz.gxteam.variant.utils.AppConstant.AUTH_WST
+import uz.gxteam.variant.utils.AppConstant.CHAT_APP_STATUS
 import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
 import uz.gxteam.variant.utils.AppConstant.NEW_APPLICATION
 import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
@@ -135,7 +139,6 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                 override fun onMessage(webSocket: WebSocket, text: String) {
                     super.onMessage(webSocket, text)
                     val j = gson.fromJson(text, JsonObject::class.java)
-
                     if (j.has(WST_EVENT) && j.has(WST_DATA)){
                         if (j.has(WST_CHANNEL)){
                             if(j.has(WST_DATA)){
@@ -162,9 +165,27 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                                         }
                                     }
                             }
+
+                            launch {
+                                statementVm.broadCastAuth(SendSocketData(CHAT_APP_STATUS,socketData.socket_id))
+                                    .collect{
+                                        when(it){
+                                            is BroadCastAuthResourse.SuccessBroadCast->{
+                                                webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.resSocket?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_APP_STATUS}\"}}")
+                                            }
+                                            is BroadCastAuthResourse.ErrorBroadCast->{
+                                                if (it.errorCode==UNAUTHCODE){
+                                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
+                                                    var bundle = Bundle()
+                                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
+                                                }else{
+                                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
+                                                }
+                                            }
+                                        }
+                                    }
+                            }
                         }
-
-
                     }
                 }
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -172,6 +193,7 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                 }
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                     super.onClosed(webSocket, code, reason)
+                    webSocket.close(code,reason)
                 }
             }
             webSocketApp = client.newWebSocket(request,listener)
@@ -180,13 +202,4 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
             e.printStackTrace()
         }
     }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        webSocketApp.close(1000, AppConstant.CLOSE_WST_TEXT)
-    }
-
-
-
 }

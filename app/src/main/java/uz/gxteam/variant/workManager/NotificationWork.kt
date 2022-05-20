@@ -8,6 +8,7 @@ import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
@@ -34,6 +35,7 @@ import uz.gxteam.variant.socket.socketMessage.SocketMessage
 import uz.gxteam.variant.utils.AppConstant.AUTH_WST
 import uz.gxteam.variant.utils.AppConstant.CHAT_MEW_MESSAGE
 import uz.gxteam.variant.utils.AppConstant.COMPANYNAME
+import uz.gxteam.variant.utils.AppConstant.EMPTYTEXT
 import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
 import uz.gxteam.variant.utils.AppConstant.SUBSCRIBE_WST
 import uz.gxteam.variant.utils.AppConstant.WEBSOCKET_URL
@@ -57,81 +59,83 @@ class NotificationWork @AssistedInject constructor(
     }
 
     fun socketData(){
-        var count=0
-        var gson = Gson()
-        var client = OkHttpClient()
-        try {
-            val request: okhttp3.Request = okhttp3.Request.Builder().url(WEBSOCKET_URL).build()
-            var listener = object:okhttp3.WebSocketListener(){
-                override fun onOpen(webSocket: WebSocket, response: Response) {
-                    super.onOpen(webSocket, response)
-                }
+        if (!mySharedPreference.accessToken.equals(EMPTYTEXT)){
+            var count=0
+            var gson = Gson()
+            var client = OkHttpClient()
+            try {
+                val request: okhttp3.Request = okhttp3.Request.Builder().url(WEBSOCKET_URL).build()
+                var listener = object:okhttp3.WebSocketListener(){
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        super.onOpen(webSocket, response)
+                    }
 
-                override fun onMessage(webSocket: WebSocket, text: String) {
-                    super.onMessage(webSocket, text)
-                    val socketData = gson.fromJson(text, ConnectSocket::class.java)
-                    if (count==0){
-                        val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
-                        GlobalScope.launch(Dispatchers.IO){
-                            stateMentRepository.broadCastingAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference.oldToken}")
-                                .collect{
-                                    if (it.isSuccessful){
-                                        webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.body()?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
-                                        count++
-                                    }
-                                }
-                        }
-                    }else{
-                        if (socketData.data!=null){
-                            val messageSocket = gson.fromJson(socketData.data, SocketMessage::class.java)
-                            GlobalScope.launch(Dispatchers.Main) {
-                                if (messageSocket.type==1){
-                                    val alarmSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                                    var resultIntent =  Intent(applicationContext, MainActivity::class.java)
-                                    var resultPendingIntent = PendingIntent.getActivity(applicationContext, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-                                    var notificationCompat =   NotificationCompat.Builder(applicationContext,CHANNEL_ID)
-                                        .setSmallIcon(R.drawable.ic_baseline_message_24)
-                                        .setContentTitle(applicationContext.getText(R.string.app_name))
-                                        .setContentText(messageSocket.message)
-                                        .setSound(alarmSound)
-                                        .setContentIntent(resultPendingIntent)
-                                        .setAutoCancel(true)
-                                        .build()
-
-                                    val notificationManager = applicationContext.getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        val descriptionText = COMPANYNAME
-                                        val importance = NotificationManager.IMPORTANCE_HIGH
-                                        val channel = NotificationChannel(CHANNEL_ID, COMPANYNAME, importance).apply { description =
-                                            descriptionText
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        super.onMessage(webSocket, text)
+                        val socketData = gson.fromJson(text, ConnectSocket::class.java)
+                        if (count==0){
+                            val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
+                            GlobalScope.launch(Dispatchers.IO){
+                                stateMentRepository.broadCastingAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                                    .collect{
+                                        if (it.isSuccessful){
+                                            webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.body()?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
+                                            count++
                                         }
-                                        notificationManager.createNotificationChannel(channel)
                                     }
-                                    notificationManager.notify(1,notificationCompat)
+                            }
+                        } else{
+                            if (socketData.data!=null){
+                                val messageSocket = gson.fromJson(socketData.data, SocketMessage::class.java)
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    if (messageSocket.type==1){
+                                        val alarmSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                                        var resultIntent =  Intent(applicationContext, MainActivity::class.java)
+                                        var resultPendingIntent = PendingIntent.getActivity(applicationContext, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                                        var notificationCompat =   NotificationCompat.Builder(applicationContext,CHANNEL_ID)
+                                            .setSmallIcon(R.drawable.ic_baseline_message_24)
+                                            .setContentTitle(applicationContext.getText(R.string.app_name))
+                                            .setContentText(messageSocket.message)
+                                            .setSound(alarmSound)
+                                            .setContentIntent(resultPendingIntent)
+                                            .setAutoCancel(true)
+                                            .build()
+
+                                        val notificationManager = applicationContext.getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            val descriptionText = COMPANYNAME
+                                            val importance = NotificationManager.IMPORTANCE_HIGH
+                                            val channel = NotificationChannel(CHANNEL_ID, COMPANYNAME, importance).apply { description =
+                                                descriptionText
+                                            }
+                                            notificationManager.createNotificationChannel(channel)
+                                        }
+                                        notificationManager.notify(1,notificationCompat)
+                                    }
                                 }
                             }
+                            count++
                         }
-                        count++
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                        super.onMessage(webSocket, bytes)
+                    }
+
+                    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                        super.onClosed(webSocket, code, reason)
+                        webSocket.close(code,reason)
+                    }
+
+                    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                        super.onFailure(webSocket, t, response)
                     }
                 }
-
-                override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                    super.onMessage(webSocket, bytes)
-                }
-
-                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                    super.onClosed(webSocket, code, reason)
-                    webSocket.close(code,reason)
-                }
-
-                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                    super.onFailure(webSocket, t, response)
-                }
+                webSocketApp = client.newWebSocket(request, listener)
+                client.dispatcher.executorService.shutdown()
+            }catch (e: Exception){
+                e.printStackTrace()
             }
-            webSocketApp = client.newWebSocket(request, listener)
-            client.dispatcher.executorService.shutdown()
-        }catch (e: Exception){
-            e.printStackTrace()
         }
     }
 

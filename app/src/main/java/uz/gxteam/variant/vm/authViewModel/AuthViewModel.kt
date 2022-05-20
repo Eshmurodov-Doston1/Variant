@@ -24,8 +24,7 @@ class AuthViewModel @Inject constructor(
         var auth = MutableStateFlow<AuthResourse>(AuthResourse.Loading)
         viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
-                var remoteAuth = authRepository.authVariant(reqAuth)
-                remoteAuth.catch {
+                authRepository.authVariant(reqAuth).catch {
                     auth.emit(AuthResourse.ErrorAuth(error = it.message,internetConnection = true))
                 }.collect {
                     if (it.isSuccessful){

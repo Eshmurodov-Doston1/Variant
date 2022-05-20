@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import uz.gxteam.variant.database.AppDatabase
 import uz.gxteam.variant.database.dao.userData.UserDataDao
+import uz.gxteam.variant.utils.AppConstant.DATABASENAME
 import javax.inject.Singleton
 
 @Module
@@ -17,7 +18,7 @@ class DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context):AppDatabase{
-        return Room.databaseBuilder(context, AppDatabase::class.java,"variant.db")
+        return Room.databaseBuilder(context, AppDatabase::class.java,DATABASENAME)
             .allowMainThreadQueries()
             .fallbackToDestructiveMigration()
             .build()

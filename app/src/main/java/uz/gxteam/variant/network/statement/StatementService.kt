@@ -14,51 +14,57 @@ import uz.gxteam.variant.models.sendMessage.sendMessage.SendMessageUser
 import uz.gxteam.variant.models.uploadPhotos.UploadPhotos
 import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.resSocet.ResSocket
+import uz.gxteam.variant.utils.AppConstant.ACCEPT
+import uz.gxteam.variant.utils.AppConstant.AUTH_STR
+import uz.gxteam.variant.utils.AppConstant.HEADER_CONTENT
+import uz.gxteam.variant.utils.AppConstant.TOKENTYPE
+import uz.gxteam.variant.utils.AppConstant.TYPETOKEN
 
 interface StatementService {
     @POST("/api/chat/get/applications")
     suspend fun getApplications(
-        @Header("Authorization") token: String,
-        @Header("Accept") accespt: String = "application/json",
-        @Header("Content-type") type: String = "application/json"
+        @Header(AUTH_STR) token: String,
+        @Header(ACCEPT) accespt: String = TYPETOKEN,
+        @Header(HEADER_CONTENT) type: String = TYPETOKEN
     ): Response<Applications>
 
 
     @POST("/api/chat/application")
     suspend fun getApplication(
         @Body sendToken: SendToken,
-        @Header("Authorization") token: String,
-        @Header("Accept") accespt: String = "application/json"
+        @Header(AUTH_STR) token: String,
+        @Header(ACCEPT) accespt: String = TYPETOKEN
     ):Response<Application>
 
     @POST("api/broadcasting/auth")
     suspend fun authBroadCasting(
         @Body sendSocketData: SendSocketData,
-        @Header("Authorization") token: String,
-        @Header("Accept") accespt: String = "application/json"):Response<ResSocket>
+        @Header(AUTH_STR) token: String,
+        @Header(ACCEPT) accespt: String = TOKENTYPE
+    ):Response<ResSocket>
 
     //AllMessage
     @POST("/api/chat/join")
     suspend fun getAllMessage(
         @Body reqMessage: ReqMessage,
-        @Header("Authorization") token: String,
-        @Header("Accept") accespt: String = "application/json"
+        @Header(AUTH_STR) token: String,
+        @Header(ACCEPT) accespt: String = TOKENTYPE
     ):Response<ResMessage>
 
     //sendMEssage
     @POST("/api/chat/send/message")
     suspend fun sendMessageChat(
         @Body sendMessageUser: SendMessageUser,
-        @Header("Authorization") token: String,
-        @Header("Accept") accespt: String = "application/json"
+        @Header(AUTH_STR) token: String,
+        @Header(ACCEPT) accespt: String = TOKENTYPE
     ):Response<ResMessageUser>
 
  //UploadImages
     @POST("/api/chat/get/photos")
     suspend fun getUploadPhotos(
      @Body sendToken: SendToken,
-        @Header("Authorization") token: String,
-        @Header("Accept") accespt: String = "application/json"
+     @Header(AUTH_STR) token: String,
+     @Header(ACCEPT) accespt: String = TOKENTYPE
     ):Response<List<UploadPhotos>>
 
 

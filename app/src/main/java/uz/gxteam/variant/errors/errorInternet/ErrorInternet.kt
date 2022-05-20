@@ -7,6 +7,10 @@ import uz.gxteam.variant.R
 import uz.gxteam.variant.databinding.ErrorDialogBinding
 import uz.gxteam.variant.databinding.NoInternetBinding
 import uz.gxteam.variant.errors.authError.AuthErrors
+import uz.gxteam.variant.utils.AppConstant.ERRORCLIENT_END
+import uz.gxteam.variant.utils.AppConstant.ERRORCLIENT_START
+import uz.gxteam.variant.utils.AppConstant.ERRORSERVER_END
+import uz.gxteam.variant.utils.AppConstant.ERRORSERVER_START
 
 
 fun noInternet(context:Context){
@@ -24,12 +28,12 @@ fun noInternet(context:Context){
 fun authError(authErrors:AuthErrors,context: Context,code:Int){
     var str =""
     when(code){
-        in 400..499 -> {
+        in ERRORCLIENT_START..ERRORCLIENT_END -> {
                 authErrors.errors?.forEach {
                     str+="${it.message}\n"
                 }
         }
-        in 500..599 -> {
+        in ERRORSERVER_START..ERRORSERVER_END -> {
            str = context.getString(R.string.server_error)
         }
     }
@@ -48,7 +52,7 @@ fun authError(authErrors:AuthErrors,context: Context,code:Int){
 fun errorNoClient(context: Context,code:Int){
     var str =""
     when(code){
-        in 500..599 -> {
+        in ERRORSERVER_START..ERRORSERVER_END -> {
             str = context.getString(R.string.server_error)
         }
     }

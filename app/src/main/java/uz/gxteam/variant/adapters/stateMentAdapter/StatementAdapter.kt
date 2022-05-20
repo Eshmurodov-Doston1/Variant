@@ -3,6 +3,7 @@ package uz.gxteam.variant.adapters.stateMentAdapter
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.DiffUtil
@@ -18,7 +19,11 @@ class StatementAdapter(var context:Context,var onItemClickListener:OnItemClickLi
         fun onBind(dataApplication: DataApplication, position: Int){
             itemMainBinding.name.text = dataApplication.full_name
             itemMainBinding.number.text = dataApplication.contract_number
+            if (dataApplication.status_title?.isNotEmpty() == true){
             itemMainBinding.categoryName.text = dataApplication.status_title
+            }else{
+                itemMainBinding.cardBtn.visibility = View.GONE
+            }
 
             when(dataApplication.photo_status){
                 1L->{

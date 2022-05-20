@@ -3,12 +3,23 @@ package uz.gxteam.variant.interceptor
 import android.content.Context
 import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import uz.gxteam.variant.utils.AppConstant.ACCESSTOKEN
+import uz.gxteam.variant.utils.AppConstant.COMPANYNAME
+import uz.gxteam.variant.utils.AppConstant.EMPTYTEXT
+import uz.gxteam.variant.utils.AppConstant.LANGUAGE
+import uz.gxteam.variant.utils.AppConstant.OLDTOKEN
+import uz.gxteam.variant.utils.AppConstant.PASSWORDAPP
+import uz.gxteam.variant.utils.AppConstant.REFRESHTOKEN
+import uz.gxteam.variant.utils.AppConstant.THEME
+import uz.gxteam.variant.utils.AppConstant.THEMECOLOR
+import uz.gxteam.variant.utils.AppConstant.TOKENTYPE
+import uz.gxteam.variant.utils.AppConstant.USERDATA
 import javax.inject.Inject
 
 /** this is class SharedPreference create and save storage data accessToken and refreshToken and token type **/
 
 class MySharedPreference @Inject constructor(@ApplicationContext private val context: Context){
-    private val NAME = "Variant"
+    private val NAME = COMPANYNAME
     private val MODE = Context.MODE_PRIVATE
     private val preferences: SharedPreferences = context.getSharedPreferences(NAME, MODE)
 
@@ -21,36 +32,19 @@ class MySharedPreference @Inject constructor(@ApplicationContext private val con
     /** clear sharedPreference **/
     fun clear(){
         var edite = preferences.edit()
-        edite.remove("accessToken")
-        edite.remove("refreshToken")
-        edite.remove("tokenType")
-//        edite.remove("token_socet")
-        edite.remove("passwordApp")
+        edite.remove(ACCESSTOKEN)
+        edite.remove(REFRESHTOKEN)
+        edite.remove(TOKENTYPE)
+        edite.remove(TOKENTYPE)
         edite.apply()
     }
 
-    var operator: String?
-        get() = preferences.getString("operator", "")
-        set(value) = preferences.edit {
-            if (value != null) {
-                it.putString("operator", value)
-            }
-        }
-
-    var token_socet: String?
-        get() = preferences.getString("token_socet", "")
-        set(value) = preferences.edit {
-            if (value != null) {
-                it.putString("token_socet", value)
-            }
-        }
-
     /** passwordApp **/
     var passwordApp: String?
-        get() = preferences.getString("passwordApp", "")
+        get() = preferences.getString(PASSWORDAPP, EMPTYTEXT)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("passwordApp", value)
+                it.putString(PASSWORDAPP, value)
             }
         }
 
@@ -58,91 +52,72 @@ class MySharedPreference @Inject constructor(@ApplicationContext private val con
 
     /** save accessToken **/
     var accessToken: String?
-        get() = preferences.getString("accessToken", "")
+        get() = preferences.getString(ACCESSTOKEN, EMPTYTEXT)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("accessToken", value)
+                it.putString(ACCESSTOKEN, value)
             }
         }
     /** save refreshToken **/
     var refreshToken: String?
-        get() = preferences.getString("refreshToken", "")
+        get() = preferences.getString(REFRESHTOKEN, EMPTYTEXT)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("refreshToken", value)
+                it.putString(REFRESHTOKEN, value)
             }
         }
     /** save tokenType **/
     var tokenType: String?
-        get() = preferences.getString("tokenType", "")
+        get() = preferences.getString(TOKENTYPE, EMPTYTEXT)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("tokenType", value)
+                it.putString(TOKENTYPE, value)
             }
         }
 
     /** User Data **/
     var userData: String?
-        get() = preferences.getString("userData", "")
+        get() = preferences.getString(USERDATA, EMPTYTEXT)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("userData", value)
+                it.putString(USERDATA, value)
             }
         }
     /** User Data **/
 
     /** User Data **/
     var oldToken: String?
-        get() = preferences.getString("oldToken", "")
+        get() = preferences.getString(OLDTOKEN, EMPTYTEXT)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("oldToken", value)
+                it.putString(OLDTOKEN, value)
             }
         }
     /** User Data **/
 
 
-
-
     var language: String?
-        get() = preferences.getString("language", "uz")
+        get() = preferences.getString(LANGUAGE, "uz")
         set(value) = preferences.edit {
             if (value != null) {
-                it.putString("language", value)
-            }
-        }
-
-    var isFirst: Boolean?
-        get() = preferences.getBoolean("isFirst", false)
-        set(value) = preferences.edit {
-            if (value != null) {
-                it.putBoolean("isFirst", value)
+                it.putString(LANGUAGE, value)
             }
         }
 
 
     var theme: Boolean?
-        get() = preferences.getBoolean("theme", false)
+        get() = preferences.getBoolean(THEME, false)
         set(value) = preferences.edit {
             if (value != null) {
-                it.putBoolean("theme", value)
+                it.putBoolean(THEME, value)
             }
         }
 
 
 
     var theme_color: String?
-        get() = preferences.getString("theme_color", "")
+        get() = preferences.getString(THEMECOLOR, EMPTYTEXT)
         set(value) = preferences.edit {
-            if (value != null) { it.putString("theme_color", value) }
+            if (value != null) { it.putString(THEMECOLOR, value) }
         }
-
-    var ColorApp: String?
-        get() = preferences.getString("ColorApp", "")
-        set(value) = preferences.edit {
-            if (value != null) {
-                it.putString("ColorApp", value)
-            }
-        }
-
 }

@@ -39,8 +39,11 @@ import uz.gxteam.variant.utils.AppConstant.AUTH_WST
 import uz.gxteam.variant.utils.AppConstant.CHAT_MEW_MESSAGE
 import uz.gxteam.variant.utils.AppConstant.CLOSE_WST_TEXT
 import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
+import uz.gxteam.variant.utils.AppConstant.MINUS_TWO
+import uz.gxteam.variant.utils.AppConstant.ONE
 import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
 import uz.gxteam.variant.utils.AppConstant.SUBSCRIBE_WST
+import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
 import uz.gxteam.variant.utils.AppConstant.WEBSOCKET_URL
 import uz.gxteam.variant.utils.AppConstant.WST_CHANNEL
 import uz.gxteam.variant.utils.AppConstant.WST_DATA
@@ -184,12 +187,12 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                                         }
                                         is BroadCastAuthResourse.ErrorBroadCast->{
                                             if (it.internetConnection==true){
-                                                if (it.errorCode==401){
+                                                if (it.errorCode== UNAUTHCODE){
                                                     var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
                                                     var bundle = Bundle()
                                                     findNavController().navigate(R.id.authFragment,bundle,navOpitions)
                                                 }else{
-                                                    errorNoClient(requireContext(),it.errorCode?:0)
+                                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
                                                 }
                                             }else{
                                                 noInternet(requireContext())
@@ -202,10 +205,10 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                         if (socketData.data!=null){
                             val messageSocket = gson.fromJson(socketData.data, SocketMessage::class.java)
                             GlobalScope.launch(Dispatchers.Main) {
-                                if (messageSocket.type==1){
-                                    listMessage.add(Message(messageSocket.app_id,listMessage.size+1,messageSocket.message,null,messageSocket.app_id,messageSocket.type,-2))
+                                if (messageSocket.type== ONE){
+                                    listMessage.add(Message(messageSocket.app_id,listMessage.size+ ONE,messageSocket.message,null,messageSocket.app_id,messageSocket.type, MINUS_TWO))
                                 }else{
-                                    listMessage.add(Message(messageSocket.app_id,listMessage.size+1,messageSocket.message,null,messageSocket.app_id,messageSocket.type,userId))
+                                    listMessage.add(Message(messageSocket.app_id,listMessage.size+ ONE,messageSocket.message,null,messageSocket.app_id,messageSocket.type,userId))
                                 }
                                 chatAdapter.notifyItemInserted(listMessage.size)
                                 binding.rvChat.smoothScrollToPosition(listMessage.size)

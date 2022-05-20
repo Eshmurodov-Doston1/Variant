@@ -6,20 +6,22 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import uz.gxteam.variant.R
 import uz.gxteam.variant.databinding.ItemLockBinding
+import uz.gxteam.variant.utils.AppConstant.ELEVENT
+import uz.gxteam.variant.utils.AppConstant.NINE
 
 class RvCalckAdapter(var onItemClickListener: OnItemClickListener, var listNumber:List<String>):RecyclerView.Adapter<RvCalckAdapter.Vh>() {
     inner class Vh(var itemLockBinding: ItemLockBinding):RecyclerView.ViewHolder(itemLockBinding.root){
         fun onBind(str:String,position: Int){
             itemLockBinding.name.text = str
             when(position){
-                9->{
+                NINE->{
                     itemLockBinding.image.visibility = View.VISIBLE
                     itemLockBinding.cardNumber.visibility = View.GONE
                     itemLockBinding.image.setOnClickListener {
                         onItemClickListener.bioMetrickClick(position)
                     }
                 }
-                11->{
+                ELEVENT->{
                     itemLockBinding.image.visibility = View.VISIBLE
                     itemLockBinding.cardNumber.visibility = View.GONE
                     itemLockBinding.image.setImageResource(R.drawable.ic_delete)
