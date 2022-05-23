@@ -1,5 +1,7 @@
 package uz.gxteam.variant
 
+import android.app.ActivityManager
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -9,14 +11,12 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.findNavController
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import uz.gxteam.variant.databinding.ActivityMainBinding
+import uz.gxteam.variant.service.MyForegroundService
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
-import uz.gxteam.variant.workManager.NotificationWork
 import kotlin.coroutines.CoroutineContext
 
 
@@ -29,9 +29,39 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
         setContentView(binding.root)
         window.statusBarColor = resources.getColor(R.color.background)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+
+
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//
+//            if (!foregroundServiceRunning()){
+//                startForegroundService(Intent(this, MyForegroundService::class.java))
+//
+//            }
+//        }else{
+//            if (!foregroundServiceRunning()) {
+//                startService(Intent(this,MyForegroundService::class.java))
+//            }
+//        }
+
         systemUI()
-        var request = OneTimeWorkRequestBuilder<NotificationWork>().build()
-        WorkManager.getInstance(this).enqueue(request)
+
+//        var request = OneTimeWorkRequestBuilder<NotificationWork>().build()
+//        WorkManager.getInstance(this).enqueue(request)
+    }
+
+
+
+
+
+    fun foregroundServiceRunning():Boolean {
+        val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
+            if (MyForegroundService::class.java.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
 

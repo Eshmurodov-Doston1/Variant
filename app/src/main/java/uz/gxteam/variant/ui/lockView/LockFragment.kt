@@ -40,6 +40,7 @@ import uz.gxteam.variant.utils.AppConstant.SEVEN
 import uz.gxteam.variant.utils.AppConstant.SIX
 import uz.gxteam.variant.utils.AppConstant.THREE
 import uz.gxteam.variant.utils.AppConstant.TWO
+import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
 import uz.gxteam.variant.utils.AppConstant.ZERO
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import kotlin.coroutines.CoroutineContext
@@ -64,7 +65,7 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
                         }
                         is UserDataResourse.ErrorUserResourse->{
                             if (it.internetConnection==true){
-                                if (it.errorCode==401){
+                                if (it.errorCode== UNAUTHCODE){
                                     var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
                                     var bundle = Bundle()
                                     findNavController().navigate(R.id.authFragment,bundle,navOpitions)

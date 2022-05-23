@@ -54,7 +54,7 @@ class NotificationWork @AssistedInject constructor(
     var CHANNEL_ID="1"
     lateinit var webSocketApp:WebSocket
     override fun doWork(): Result {
-        socketData()
+       // socketData()
         return Result.success()
     }
 

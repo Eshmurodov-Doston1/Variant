@@ -66,8 +66,25 @@ object AppConstant {
     const val TYPETOKEN = "application/json"
 
     const val REFRESHTOKEN_ADD_URL = "/api/refresh/token"
+    const val API_UPLOAD = "/api/chat/upload"
 
     const val REFRESHTOKENT_STR = "refresh_token"
     const val AUTH_STR = "Authorization"
     const val HEADER_CONTENT = "Content-type"
+    const val POST = "POST"
+    const val TOKEN = "token"
+    const val TYPE = "type"
+    const val  PHOTO = "photo"
+    const val ISUPDATE = "is_update"
+    const val VALUEUPDATE = "1"
+
+
+    /** Date Formatter **/
+    const val DATE_FORMAT = "yyyyMMdd_HHmmss"
+    /** Image format **/
+    const val IMAGE_FORMAT = ".jpg"
+
+    const val FOREGROUND_CODE = 1001
+
+    const val CHANNEL_ID="1"
 }

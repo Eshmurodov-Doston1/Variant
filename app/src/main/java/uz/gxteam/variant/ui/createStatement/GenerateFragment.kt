@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
@@ -54,7 +53,19 @@ import uz.gxteam.variant.models.uploadPhotos.UploadPhotos
 import uz.gxteam.variant.resourse.applicationResourse.ApplicationResourse
 import uz.gxteam.variant.resourse.uploadPhotos.UploadphotosResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
+import uz.gxteam.variant.utils.AppConstant.ACCEPT
+import uz.gxteam.variant.utils.AppConstant.API_UPLOAD
+import uz.gxteam.variant.utils.AppConstant.AUTH_STR
 import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
+import uz.gxteam.variant.utils.AppConstant.DATE_FORMAT
+import uz.gxteam.variant.utils.AppConstant.IMAGE_FORMAT
+import uz.gxteam.variant.utils.AppConstant.ISUPDATE
+import uz.gxteam.variant.utils.AppConstant.PHOTO
+import uz.gxteam.variant.utils.AppConstant.POST
+import uz.gxteam.variant.utils.AppConstant.TOKEN
+import uz.gxteam.variant.utils.AppConstant.TYPE
+import uz.gxteam.variant.utils.AppConstant.TYPETOKEN
+import uz.gxteam.variant.utils.AppConstant.VALUEUPDATE
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import uz.gxteam.variant.vm.statementVm.StatementVm
 import java.io.File
@@ -90,9 +101,9 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
 
-            if (param3?.photo_status!! >= 4){
-                uploadBtn.isEnabled = false
-            }
+
+
+            unclickButton()
 
 
             uploadBtn.setOnClickListener {
@@ -140,6 +151,8 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                         }
                         is UploadphotosResourse.SuccessUploadPhotos->{
                             spinKit.visibility = View.GONE
+                           unclickButton()
+
                             uploadAdapter = UploadAdapter(object:UploadAdapter.OnIemLongClick{
                                 override fun onUploadClick(
                                     uploadPhotos: UploadPhotos,
@@ -250,7 +263,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         if (it) {
             var openInputStream = activity?.contentResolver?.openInputStream(photoURI)
 
-            var format = SimpleDateFormat("yyyyMMdd_HHmmss",Locale.getDefault()).format(Date())
+            var format = SimpleDateFormat(DATE_FORMAT,Locale.getDefault()).format(Date())
             var file = File(activity?.filesDir, "$format.jpg")
 
             var fileoutputStream = FileOutputStream(file)
@@ -268,8 +281,8 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         if (it) {
             var openInputStream = activity?.contentResolver?.openInputStream(photoURI)
 
-            var format = SimpleDateFormat("yyyyMMdd_HHmmss",Locale.getDefault()).format(Date())
-            var file = File(activity?.filesDir, "$format.jpg")
+            var format = SimpleDateFormat(DATE_FORMAT,Locale.getDefault()).format(Date())
+            var file = File(activity?.filesDir, "$format$IMAGE_FORMAT")
 
             var fileoutputStream = FileOutputStream(file)
             openInputStream?.copyTo(fileoutputStream)
@@ -284,9 +297,9 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
     @Throws(IOException::class)
     private fun createImageFile(): File {
-        val date = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val date = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date())
         val externalFilesDir = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile("JPEG_$date",".jpg",externalFilesDir).apply { absolutePath }
+        return File.createTempFile("JPEG_$date",IMAGE_FORMAT,externalFilesDir).apply { absolutePath }
     }
 
     //Gallery
@@ -298,8 +311,8 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         uri?:return@registerForActivityResult
         var openInputStream =(activity)?.contentResolver?.openInputStream(uri)
         var filesDir = (activity)?.filesDir
-        var format = SimpleDateFormat("yyyyMMdd_HHmmss",Locale.getDefault()).format(Date())
-        var file = File(filesDir,"$format.jpg")
+        var format = SimpleDateFormat(DATE_FORMAT,Locale.getDefault()).format(Date())
+        var file = File(filesDir,"$format$IMAGE_FORMAT")
         val fileOutputStream = FileOutputStream(file)
         openInputStream!!.copyTo(fileOutputStream)
         openInputStream.close()
@@ -316,11 +329,10 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
     private var getImageContentUpdate = registerForActivityResult(ActivityResultContracts.GetContent()){ uri->
         uri?:return@registerForActivityResult
-        // fragmentAddZnakBinding.image.setImageURI(uri)
         var openInputStream =(activity)?.contentResolver?.openInputStream(uri)
         var filesDir = (activity)?.filesDir
-        var format = SimpleDateFormat("yyyyMMdd_HHmmss",Locale.getDefault()).format(Date())
-        var file = File(filesDir,"$format.jpg")
+        var format = SimpleDateFormat(DATE_FORMAT,Locale.getDefault()).format(Date())
+        var file = File(filesDir,"$format$IMAGE_FORMAT")
         val fileOutputStream = FileOutputStream(file)
         openInputStream!!.copyTo(fileOutputStream)
         openInputStream.close()
@@ -333,10 +345,10 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
     fun uploadImage(imagePath:String){
         GlobalScope.launch(Dispatchers.Main) {
-            MultipartUploadRequest(context = requireContext(),serverUrl = "${BASE_URL}/api/chat/upload")
-                .addHeader("Authorization","${authViewModel.getSharedPreference().tokenType} ${authViewModel.getSharedPreference().accessToken}")
-                .addHeader("Accept","application/json")
-                .setMethod("POST")
+            MultipartUploadRequest(context = requireContext(),serverUrl = "${BASE_URL}${API_UPLOAD}")
+                .addHeader(AUTH_STR,"${authViewModel.getSharedPreference().tokenType} ${authViewModel.getSharedPreference().accessToken}")
+                .addHeader(ACCEPT,TYPETOKEN)
+                .setMethod(POST)
                 .setNotificationConfig { context, uploadId ->
                     UploadNotificationAction(
                         icon = android.R.drawable.ic_menu_close_clear_cancel,
@@ -363,9 +375,9 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                         )
                     )
                 }
-                .addParameter("token", param3?.token.toString()) //Adding text parameter to the request
-                .addParameter("type", "${param3?.photo_status?.plus(1)}") //Adding text parameter to the request
-                .addFileToUpload(imagePath, "photo") //Adding file
+                .addParameter(TOKEN, param3?.token.toString()) //Adding text parameter to the request
+                .addParameter(TYPE, "${param3?.photo_status?.plus(1)}") //Adding text parameter to the request
+                .addFileToUpload(imagePath, PHOTO) //Adding file
                 .subscribe(requireContext(),viewLifecycleOwner, delegate = object:
                     RequestObserverDelegate {
                     override fun onCompleted(context: Context, uploadInfo: UploadInfo) {
@@ -414,6 +426,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                     }
 
                 })
+
         }
     }
 
@@ -425,7 +438,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             is ApplicationResourse.SuccessApplication->{
                                 it.application.let {
                                     param3 = DataApplication(param3?.status,param3?.level,it?.client_id?.toLong(), it?.contract_number,it?.photo_status?.toLong(), it?.token.toString(),param3?.status_title, it?.full_name)
-                                    Log.e("Update_Param3", param3.toString())
+                                  unclickButton()
                                    binding.status.text = param3?.status_title
                                 }
                             }
@@ -448,15 +461,21 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         }
     }
 
+    fun unclickButton(){
+        if (param3?.photo_status!! >= 6){
+            binding.uploadBtn.isEnabled = false
+        }
+    }
+
 
 
 
     fun updateImage(imagePath:String){
         GlobalScope.launch(Dispatchers.Main) {
-            MultipartUploadRequest(context = requireContext(),serverUrl = "${BASE_URL}/api/chat/upload")
-                .addHeader("Authorization","${authViewModel.getSharedPreference().tokenType} ${authViewModel.getSharedPreference().accessToken}")
-                .addHeader("Accept","application/json")
-                .setMethod("POST")
+            MultipartUploadRequest(context = requireContext(),serverUrl = "${BASE_URL}${API_UPLOAD}")
+                .addHeader(AUTH_STR,"${authViewModel.getSharedPreference().tokenType} ${authViewModel.getSharedPreference().accessToken}")
+                .addHeader(ACCEPT,TYPETOKEN)
+                .setMethod(POST)
                 .setNotificationConfig { context, uploadId ->
                     UploadNotificationAction(
                         icon = android.R.drawable.ic_menu_close_clear_cancel,
@@ -483,10 +502,10 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                         )
                     )
                 }
-                .addParameter("token", param3?.token.toString()) //Adding text parameter to the request
-                .addParameter("type", "${uploadPhotosApp?.type}") //Adding text parameter to the request
-                .addFileToUpload(imagePath, "photo") //Adding file
-                .addParameter("is_update","1")
+                .addParameter(TOKEN, param3?.token.toString()) //Adding text parameter to the request
+                .addParameter(TYPE, "${uploadPhotosApp?.type}") //Adding text parameter to the request
+                .addFileToUpload(imagePath, PHOTO) //Adding file
+                .addParameter(ISUPDATE,VALUEUPDATE)
                 .subscribe(requireContext(),viewLifecycleOwner, delegate = object:
                     RequestObserverDelegate {
                     override fun onCompleted(context: Context, uploadInfo: UploadInfo) {}

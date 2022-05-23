@@ -139,6 +139,7 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                 override fun onMessage(webSocket: WebSocket, text: String) {
                     super.onMessage(webSocket, text)
                     val j = gson.fromJson(text, JsonObject::class.java)
+
                     if (j.has(WST_EVENT) && j.has(WST_DATA)){
                         if (j.has(WST_CHANNEL)){
                             if(j.has(WST_DATA)){

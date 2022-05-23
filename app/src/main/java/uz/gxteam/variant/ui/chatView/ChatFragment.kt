@@ -1,6 +1,7 @@
 package uz.gxteam.variant.ui.chatView
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
 import androidx.fragment.app.viewModels
@@ -39,6 +40,7 @@ import uz.gxteam.variant.utils.AppConstant.AUTH_WST
 import uz.gxteam.variant.utils.AppConstant.CHAT_MEW_MESSAGE
 import uz.gxteam.variant.utils.AppConstant.CLOSE_WST_TEXT
 import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
+import uz.gxteam.variant.utils.AppConstant.MINUS_ONE
 import uz.gxteam.variant.utils.AppConstant.MINUS_TWO
 import uz.gxteam.variant.utils.AppConstant.ONE
 import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
@@ -75,7 +77,7 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
     var count = ZERO
     var webSocketApp: WebSocket? = null
     var client: OkHttpClient? = null
-    var userId:Int=-1
+    var userId:Int= MINUS_ONE
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -101,13 +103,13 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                                     }
                                     is MessageResourse.ErrorMessage->{
                                         if(it.internetConnection==true){
-                                            if (it.errorCode==401){
+                                            if (it.errorCode==UNAUTHCODE){
                                                 var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
                                                     .build()
                                                 var bundle = Bundle()
                                                 findNavController().navigate(R.id.authFragment,bundle,navOpitions)
                                             }else{
-                                                errorNoClient(requireContext(),it.errorCode?:0)
+                                                errorNoClient(requireContext(),it.errorCode?:ZERO)
                                             }
                                         }else{
                                             noInternet(requireContext())
@@ -146,14 +148,14 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                         is AllMessageResourse.ErrorAllMessage->{
                             spinKit.visibility = View.GONE
                             if (it.internetConnection==true){
-                                if (it.errorCode==401){
+                                if (it.errorCode==UNAUTHCODE){
                                     var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
                                         .build()
                                     var bundle = Bundle()
                                     findNavController().navigate(R.id.authFragment,bundle,navOpitions)
                                     authViewModel.getSharedPreference().clear()
                                 }else{
-                                    errorNoClient(requireContext(),it.errorCode?:0)
+                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
                                 }
                             }else{
                                 noInternet(requireContext())
@@ -175,7 +177,7 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                 override fun onMessage(webSocket: WebSocket, text: String) {
                     super.onMessage(webSocket, text)
                     val socketData = gson.fromJson(text, ConnectSocket::class.java)
-                    if (count==0){
+                    if (count==ZERO){
                         val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
                         launch {
                             stamentVm.broadCastAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${param3?.token}", dataSocket.socket_id))

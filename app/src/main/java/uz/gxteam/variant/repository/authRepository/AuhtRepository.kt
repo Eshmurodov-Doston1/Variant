@@ -1,6 +1,5 @@
 package uz.gxteam.variant.repository.authRepository
 
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flow
 import uz.gxteam.variant.models.auth.reqAuth.ReqAuth
 import uz.gxteam.variant.network.registerApi.AuthService
