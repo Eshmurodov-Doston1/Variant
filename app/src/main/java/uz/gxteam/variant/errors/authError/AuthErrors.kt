@@ -5,5 +5,5 @@ import uz.gxteam.variant.utils.AppConstant.AUTHERRORFIELD
 
 data class AuthErrors(
     @SerializedName(AUTHERRORFIELD)
-    val errors: List<Error>?=null,
+    val errors: Any?,
 )

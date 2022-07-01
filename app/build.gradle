@@ -13,7 +13,7 @@ android {
         minSdk 21
         targetSdk 32
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -21,14 +21,14 @@ android {
     buildTypes {
 
         debug {
-            buildConfigField "String", "BASE_URL", "\"http://web.variantgroup.uz\""
+            buildConfigField "String", "BASE_URL", "\"https://dev.variantgroup.uz\""
         }
         // developer -> development
         // production ->
 
 
         release {
-            buildConfigField "String", "BASE_URL", "\"http://web.variantgroup.uz\""
+            buildConfigField "String", "BASE_URL", "\"https://dev.variantgroup.uz\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

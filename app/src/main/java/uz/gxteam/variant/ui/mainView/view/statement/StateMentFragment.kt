@@ -145,7 +145,8 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                             if(j.has(WST_DATA)){
                                 loadData()
                             }
-                        }else{
+                        }else
+                        {
                             val socketData = gson.fromJson(j.get(WST_DATA).asString, DataSocket::class.java)
                             launch {
                                 statementVm.broadCastAuth(SendSocketData("${NEW_APPLICATION}.${userData.id}",socketData.socket_id))

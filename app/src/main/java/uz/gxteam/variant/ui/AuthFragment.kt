@@ -1,6 +1,7 @@
 package uz.gxteam.variant.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
 import androidx.core.widget.doAfterTextChanged
@@ -66,8 +67,7 @@ class AuthFragment : BaseFragment(R.layout.fragment_auth),CoroutineScope {
                                 is AuthResourse.ErrorAuth->{
                                     listenerActivity.hideLoading()
                                     if (it.internetConnection==true){
-                                        val error = gson.fromJson(it.error, AuthErrors::class.java)
-                                        authError(error,requireContext(),it.errorCode?:0)
+                                        authError(it.error.toString(),requireContext(),it.errorCode?:0)
                                     }else{
                                         noInternet(requireContext())
                                     }

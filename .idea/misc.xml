@@ -6,6 +6,7 @@
         <entry key="../../.gradle/caches/transforms-3/210f82b83e475669f3820d7657e60d6c/transformed/material-1.5.0/res/layout/mtrl_picker_fullscreen.xml" value="0.260546875" />
         <entry key="app/src/main/res/drawable-v24/clouse_account.xml" value="0.237" />
         <entry key="app/src/main/res/drawable-v24/ic_baseline_message_24.xml" value="0.237" />
+        <entry key="app/src/main/res/drawable-v24/ic_variant_logo.xml" value="0.108" />
         <entry key="app/src/main/res/drawable-v24/settings.xml" value="0.237" />
         <entry key="app/src/main/res/drawable/back_settings.xml" value="0.22" />
         <entry key="app/src/main/res/drawable/chat_back_from.xml" value="0.22" />
@@ -30,6 +31,7 @@
         <entry key="app/src/main/res/drawable/ic_variant_logo.xml" value="0.237" />
         <entry key="app/src/main/res/drawable/icon.xml" value="0.165" />
         <entry key="app/src/main/res/drawable/icon_chat.xml" value="0.125" />
+        <entry key="app/src/main/res/drawable/icon_home.xml" value="0.191" />
         <entry key="app/src/main/res/drawable/icon_settings.xml" value="0.22" />
         <entry key="app/src/main/res/drawable/progress_style.xml" value="0.185" />
         <entry key="app/src/main/res/drawable/upload.xml" value="0.237" />
@@ -38,14 +40,14 @@
         <entry key="app/src/main/res/layout/dialog_camera.xml" value="0.25" />
         <entry key="app/src/main/res/layout/dialog_parol.xml" value="0.25" />
         <entry key="app/src/main/res/layout/error_dialog.xml" value="0.25" />
-        <entry key="app/src/main/res/layout/fragment_auth.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragment_auth.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_chat.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/fragment_chat_list.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/fragment_generate.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_lock.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_main.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.260546875" />
-        <entry key="app/src/main/res/layout/fragment_state_ment.xml" value="0.260546875" />
+        <entry key="app/src/main/res/layout/fragment_state_ment.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_statement.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/full_screen.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/image_dialog.xml" value="0.260546875" />

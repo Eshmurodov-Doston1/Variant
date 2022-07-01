@@ -52,7 +52,7 @@
             android:textStyle="normal"
             android:textAllCaps="false"
             android:background="@drawable/button_back"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/_25sdp"/>
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_30sdp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

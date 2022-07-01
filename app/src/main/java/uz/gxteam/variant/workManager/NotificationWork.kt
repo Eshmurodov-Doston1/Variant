@@ -79,7 +79,7 @@ class NotificationWork @AssistedInject constructor(
                                 stateMentRepository.broadCastingAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
                                     .collect{
                                         if (it.isSuccessful){
-                                            webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.body()?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
+                                            webSocket.send("{\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.body()?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
                                             count++
                                         }
                                     }

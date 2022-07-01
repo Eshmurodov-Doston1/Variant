@@ -53,7 +53,6 @@ class ChatListFragment : BaseFragment(R.layout.fragment_chat_list) {
                         }
                         is ApplicationsResourse.SuccessApplications->{
                             spinKit.visibility = View.GONE
-
                             if (it.applications?.data?.isEmpty() == true){
                                 animationView.visibility = View.VISIBLE
                                 rvStatement.visibility  =View.GONE
@@ -67,7 +66,7 @@ class ChatListFragment : BaseFragment(R.layout.fragment_chat_list) {
                         is ApplicationsResourse.ErrorApplications->{
                             spinKit.visibility = View.GONE
                             if (it.internetConnection==true){
-                                if (it.errorCode== UNAUTHCODE){
+                                if (it.errorCode == UNAUTHCODE){
                                     var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
                                         .build()
                                     var bundle = Bundle()
