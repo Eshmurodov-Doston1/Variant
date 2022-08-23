@@ -43,9 +43,7 @@ fun authError(authErrors:String,context: Context,code:Int){
     var errorDialogBinding = ErrorDialogBinding.inflate(LayoutInflater.from(context),null,false)
     when(code){
         in ERRORCLIENT_START..ERRORCLIENT_END -> {
-
             val fromJson = gson.fromJson(authErrors, AuthErrors::class.java)
-
             if (fromJson.errors.toString().subSequence(ZERO,ONE) == "["){
                 val jsonArray = JSONObject(authErrors)
                 val toString = jsonArray.get("errors").toString()
@@ -54,14 +52,14 @@ fun authError(authErrors:String,context: Context,code:Int){
                     var jsonObject = JSONObject(jsonArray1[i].toString())
                     str+=jsonObject.get("message")
                 }
-                errorDialogBinding.errorText.text = str
+                errorDialogBinding.title.text = str
             }else{
                 val error = gson.fromJson(authErrors, NoErrorList::class.java)
-                errorDialogBinding.errorText.text = error.errors.message
+                errorDialogBinding.title.text = error.errors.message
             }
         }
         in ERRORSERVER_START..ERRORSERVER_END -> {
-            errorDialogBinding.errorText.text =  context.getString(R.string.server_error)
+            errorDialogBinding.title.text =  context.getString(R.string.server_error)
         }
     }
       create.setView(errorDialogBinding.root)
@@ -84,7 +82,7 @@ fun errorNoClient(context: Context,code:Int){
     val create = alertDailog.create()
     var errorDialogBinding = ErrorDialogBinding.inflate(LayoutInflater.from(context),null,false)
     create.setView(errorDialogBinding.root)
-    errorDialogBinding.errorText.text = str
+    errorDialogBinding.title.text = str
     errorDialogBinding.okBtn.setOnClickListener {
         create.dismiss()
     }
@@ -97,7 +95,7 @@ fun messageError(message:String,context: Context){
     val create = alertDailog.create()
     var errorDialogBinding = ErrorDialogBinding.inflate(LayoutInflater.from(context),null,false)
     create.setView(errorDialogBinding.root)
-    errorDialogBinding.errorText.text = message
+    errorDialogBinding.title.text = message
     errorDialogBinding.okBtn.setOnClickListener {
         create.dismiss()
     }

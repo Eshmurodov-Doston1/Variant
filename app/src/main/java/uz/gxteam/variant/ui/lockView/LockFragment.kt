@@ -1,33 +1,24 @@
 package uz.gxteam.variant.ui.lockView
 
 import android.app.AlertDialog
-import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.viewModels
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import com.mikhaellopez.biometric.BiometricHelper
 import com.mikhaellopez.biometric.BiometricPromptInfo
 import com.mikhaellopez.biometric.BiometricType
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import uz.gxteam.variant.ListenerActivity
 import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.RvCalckAdapter
 import uz.gxteam.variant.databinding.DialogParolBinding
 import uz.gxteam.variant.databinding.ErrorDialogBinding
 import uz.gxteam.variant.databinding.FragmentLockBinding
-import uz.gxteam.variant.errors.errorInternet.errorNoClient
-import uz.gxteam.variant.errors.errorInternet.noInternet
-import uz.gxteam.variant.resourse.userResourse.UserDataResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
 import uz.gxteam.variant.utils.AppConstant.EIGHT
 import uz.gxteam.variant.utils.AppConstant.FIVE
@@ -40,10 +31,9 @@ import uz.gxteam.variant.utils.AppConstant.SEVEN
 import uz.gxteam.variant.utils.AppConstant.SIX
 import uz.gxteam.variant.utils.AppConstant.THREE
 import uz.gxteam.variant.utils.AppConstant.TWO
-import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
 import uz.gxteam.variant.utils.AppConstant.ZERO
+import uz.gxteam.variant.utils.fetchResult
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
-import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
 class LockFragment : BaseFragment(R.layout.fragment_lock) {
@@ -57,31 +47,15 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+            authViewModel.getUserData()
             launch {
-                authViewModel.getUserData().collect{
-                    when(it){
-                        is UserDataResourse.SuccessUserResourse->{
-                            authViewModel.getSharedPreference().userData = Gson().toJson(it.userData)
-                        }
-                        is UserDataResourse.ErrorUserResourse->{
-                            if (it.internetConnection==true){
-                                if (it.errorCode== UNAUTHCODE){
-                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
-                                    var bundle = Bundle()
-                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                }else{
-                                    errorNoClient(requireContext(),it.errorCode?:0)
-                                }
-                            }else{
-                                noInternet(requireContext())
-                            }
-                        }
-                    }
-                }
+                authViewModel.userData.fetchResult(compositionRoot.uiControllerApp,{ result->
+                    authViewModel.getSharedPreference().userData = Gson().toJson(result)
+                },{isClick ->  })
             }
             passWordApp = authViewModel.getSharedPreference().passwordApp.toString()
             if (passWordApp != ""){
-                namePage.text =getString(R.string.password_write)
+                namePage.text = getString(R.string.password_write)
             }
             loadNumber()
             rvCalckAdapter = RvCalckAdapter(object:RvCalckAdapter.OnItemClickListener{
@@ -95,7 +69,6 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
                                 val dialogParolBinding = DialogParolBinding.inflate(LayoutInflater.from(requireContext()), null, false)
                                 dialogParolBinding.okBtn.setOnClickListener {
                                     authViewModel.getSharedPreference().passwordApp = code
-                                    listenerActivity.showLoading()
                                     findNavController().navigate(R.id.action_lockFragment_to_mainFragment)
                                     code=""
                                     create.dismiss()
@@ -114,13 +87,12 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
                                 create.show()
                             }else{
                                 if (code == passWordApp){
-                                    listenerActivity.showLoading()
                                     findNavController().navigate(R.id.action_lockFragment_to_mainFragment)
                                 }else{
                                     var dialogAlert = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
                                     val create = dialogAlert.create()
                                     var errorDialog = ErrorDialogBinding.inflate(LayoutInflater.from(requireContext()),null,false)
-                                    errorDialog.errorText.text = getString(R.string.error_password)
+                                    errorDialog.title.text = getString(R.string.error_password)
                                     errorDialog.okBtn.setOnClickListener {
                                         create.dismiss()
                                     }
@@ -212,8 +184,6 @@ class LockFragment : BaseFragment(R.layout.fragment_lock) {
             rvNumber.isNestedScrollingEnabled=false
 
             biometrick()
-
-            listenerActivity.hideLoading()
         }
     }
 

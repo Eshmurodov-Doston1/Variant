@@ -1,9 +1,7 @@
 package uz.gxteam.variant.network.statement
 
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.*
 import uz.gxteam.variant.models.appliction.Application
 import uz.gxteam.variant.models.getApplication.reqApplication.SendToken
 import uz.gxteam.variant.models.getApplications.Applications
@@ -11,6 +9,8 @@ import uz.gxteam.variant.models.messages.reqMessage.ReqMessage
 import uz.gxteam.variant.models.messages.resMessage.ResMessage
 import uz.gxteam.variant.models.sendMessage.resMessage.ResMessageUser
 import uz.gxteam.variant.models.sendMessage.sendMessage.SendMessageUser
+import uz.gxteam.variant.models.uploaCategory.UploadCategory
+import uz.gxteam.variant.models.uploadPhotos.UploadPhotoData
 import uz.gxteam.variant.models.uploadPhotos.UploadPhotos
 import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.resSocet.ResSocket
@@ -40,7 +40,7 @@ interface StatementService {
     suspend fun authBroadCasting(
         @Body sendSocketData: SendSocketData,
         @Header(AUTH_STR) token: String,
-        @Header(ACCEPT) accespt: String = TOKENTYPE
+        @Header(ACCEPT) accespt: String = TYPETOKEN
     ):Response<ResSocket>
 
     //AllMessage
@@ -48,7 +48,7 @@ interface StatementService {
     suspend fun getAllMessage(
         @Body reqMessage: ReqMessage,
         @Header(AUTH_STR) token: String,
-        @Header(ACCEPT) accespt: String = TOKENTYPE
+        @Header(ACCEPT) accespt: String = TYPETOKEN
     ):Response<ResMessage>
 
     //sendMEssage
@@ -56,7 +56,7 @@ interface StatementService {
     suspend fun sendMessageChat(
         @Body sendMessageUser: SendMessageUser,
         @Header(AUTH_STR) token: String,
-        @Header(ACCEPT) accespt: String = TOKENTYPE
+        @Header(ACCEPT) accespt: String = TYPETOKEN
     ):Response<ResMessageUser>
 
  //UploadImages
@@ -64,8 +64,16 @@ interface StatementService {
     suspend fun getUploadPhotos(
      @Body sendToken: SendToken,
      @Header(AUTH_STR) token: String,
-     @Header(ACCEPT) accespt: String = TOKENTYPE
-    ):Response<List<UploadPhotos>>
+     @Header(ACCEPT) accespt: String = TYPETOKEN
+    ):Response<UploadPhotoData>
+
+ //UploadImages
+    @GET("/api/chat/get/status/{id}")
+    suspend fun getUploadFileCategory(
+     @Path("id") id:Int,
+     @Header(AUTH_STR) token: String,
+     @Header(ACCEPT) accespt: String = TYPETOKEN
+    ):Response<UploadCategory>
 
 
 

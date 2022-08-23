@@ -1,7 +1,8 @@
 package uz.gxteam.variant.utils
 
 object AppConstant {
-    const val WEBSOCKET_URL = "ws://web.variantgroup.uz:6001/app/mykey?protocol=7&client=js&version=7.0.6&flash=false"
+    const val WEBSOCKET_URL = "wss://socket.variantgroup.uz/app/mykey?protocol=7&client=js&version=7.0.3&flash=false"
+
     const val PORT_SERVER = "6001"
     const val NEW_APPLICATION = "private-getChatNewApp"
     const val WST_EVENT = "event"
@@ -59,8 +60,14 @@ object AppConstant {
     const val ERRORCLIENT_START = 400
     const val ERRORCLIENT_END = 499
     const val SUCCESS_CODE = 200
+    const val NO_INTERNET = -2
 
+    const val CLIENT_CODE_START = 400
+    const val CLIENT_CODE_END = 499
 
+    const val SERVER_CODE_START = 500
+    const val SERVER_CODE_END = 599
+    const val UN_AUTHORIZATION = 401
     /** API Interface Connection **/
     const val ACCEPT = "Accept"
     const val TYPETOKEN = "application/json"

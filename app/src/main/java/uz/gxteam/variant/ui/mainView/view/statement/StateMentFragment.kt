@@ -1,17 +1,13 @@
 package uz.gxteam.variant.ui.mainView.view.statement
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
 import androidx.fragment.app.viewModels
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -21,28 +17,24 @@ import okio.ByteString
 import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.stateMentAdapter.StatementAdapter
 import uz.gxteam.variant.databinding.FragmentStateMentBinding
-import uz.gxteam.variant.errors.errorInternet.errorNoClient
-import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.models.getApplications.DataApplication
-import uz.gxteam.variant.resourse.broadCastAuth.BroadCastAuthResourse
-import uz.gxteam.variant.resourse.stateMentApplications.ApplicationsResourse
 import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.dataSocket.DataSocket
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
-import uz.gxteam.variant.utils.AppConstant
 import uz.gxteam.variant.utils.AppConstant.AUTH_WST
 import uz.gxteam.variant.utils.AppConstant.CHAT_APP_STATUS
 import uz.gxteam.variant.utils.AppConstant.DATAAPPLICATION
 import uz.gxteam.variant.utils.AppConstant.NEW_APPLICATION
 import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
 import uz.gxteam.variant.utils.AppConstant.SUBSCRIBE_WST
-import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
 import uz.gxteam.variant.utils.AppConstant.WEBSOCKET_URL
 import uz.gxteam.variant.utils.AppConstant.WST_CHANNEL
 import uz.gxteam.variant.utils.AppConstant.WST_DATA
 import uz.gxteam.variant.utils.AppConstant.WST_EVENT
-import uz.gxteam.variant.utils.AppConstant.ZERO
+import uz.gxteam.variant.utils.fetchResult
 import uz.gxteam.variant.vm.statementVm.StatementVm
+import java.util.concurrent.TimeUnit
+
 
 @AndroidEntryPoint
 class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
@@ -75,58 +67,40 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
 
    fun loadData() {
        binding.apply {
+           statementVm.getAllApplications()
            launch {
-               statementVm.getAllApplications().collect {
-                   when (it) {
-                       is ApplicationsResourse.Loading -> {
-                           spinKit.visibility = View.VISIBLE
-                       }
-                       is ApplicationsResourse.SuccessApplications -> {
-                           spinKit.visibility = View.GONE
-
-                           if (it.applications?.data?.isEmpty() == true) {
-                               animationView.visibility = View.VISIBLE
-                               rvStatement.visibility = View.GONE
-                           } else {
-                               animationView.visibility = View.GONE
-                               rvStatement.visibility = View.VISIBLE
-                               stateMentAdapter.submitList(it.applications?.data)
-                           }
-                           rvStatement.adapter = stateMentAdapter
-                           stateMentAdapter.notifyDataSetChanged()
-                       }
-                       is ApplicationsResourse.ErrorApplications -> {
-                           spinKit.visibility = View.GONE
-                           if (it.internetConnection == true) {
-                               if (it.errorCode == UNAUTHCODE) {
-                                   var navOpitions =
-                                       NavOptions.Builder().setPopUpTo(R.id.authFragment, false)
-                                           .build()
-                                   var bundle = Bundle()
-                                   findNavController().navigate(
-                                       R.id.authFragment,
-                                       bundle,
-                                       navOpitions
-                                   )
-                               } else {
-                                   errorNoClient(requireContext(), it.errorCode ?: ZERO)
-                               }
-                           } else {
-                               noInternet(requireContext())
-                           }
-                       }
+               statementVm.getAllApplications.fetchResult(compositionRoot.uiControllerApp,{ result->
+                   if (result?.data?.isEmpty() == true) {
+                       animationView.visibility = View.VISIBLE
+                       rvStatement.visibility = View.GONE
+                   } else {
+                       animationView.visibility = View.GONE
+                       rvStatement.visibility = View.VISIBLE
+                       stateMentAdapter.submitList(result?.data)
                    }
-               }
+                   rvStatement.adapter = stateMentAdapter
+                   stateMentAdapter.notifyDataSetChanged()
+               },{isClick ->  })
            }
        }
 
    }
     fun socket(){
         var gson = Gson()
-        var client = OkHttpClient()
+        var client: OkHttpClient
+
         val userData = gson.fromJson(statementVm.getShared().userData, uz.gxteam.variant.models.userData.UserData::class.java)
         try{
-            val request: okhttp3.Request = okhttp3.Request.Builder().url(WEBSOCKET_URL).build()
+
+
+
+            client = OkHttpClient.Builder().readTimeout(20, TimeUnit.SECONDS)
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .build()
+
+
+            val request: okhttp3.Request = okhttp3.Request.Builder().url(WEBSOCKET_URL)
+            .build()
             var listener = object:WebSocketListener(){
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -148,44 +122,18 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                         }else
                         {
                             val socketData = gson.fromJson(j.get(WST_DATA).asString, DataSocket::class.java)
+                            statementVm.broadCastAuth(SendSocketData("${NEW_APPLICATION}.${userData.id}",socketData.socket_id))
                             launch {
-                                statementVm.broadCastAuth(SendSocketData("${NEW_APPLICATION}.${userData.id}",socketData.socket_id))
-                                    .collect{
-                                        when(it){
-                                            is BroadCastAuthResourse.SuccessBroadCast->{
-                                                webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.resSocket?.auth}\",\"${WST_CHANNEL}\":\"${NEW_APPLICATION}.${userData.id}\"}}")
-                                            }
-                                            is BroadCastAuthResourse.ErrorBroadCast->{
-                                                if (it.errorCode==UNAUTHCODE){
-                                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
-                                                    var bundle = Bundle()
-                                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                                }else{
-                                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
-                                                }
-                                            }
-                                        }
-                                    }
+                              statementVm.broadCastAuth.fetchResult(compositionRoot.uiControllerApp,{ result->
+                                  webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${result?.auth}\",\"${WST_CHANNEL}\":\"${NEW_APPLICATION}.${userData.id}\"}}")
+                              },{isClick ->  })
                             }
 
+                            statementVm.broadCastAuth(SendSocketData(CHAT_APP_STATUS,socketData.socket_id))
                             launch {
-                                statementVm.broadCastAuth(SendSocketData(CHAT_APP_STATUS,socketData.socket_id))
-                                    .collect{
-                                        when(it){
-                                            is BroadCastAuthResourse.SuccessBroadCast->{
-                                                webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.resSocket?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_APP_STATUS}\"}}")
-                                            }
-                                            is BroadCastAuthResourse.ErrorBroadCast->{
-                                                if (it.errorCode==UNAUTHCODE){
-                                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
-                                                    var bundle = Bundle()
-                                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                                }else{
-                                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
-                                                }
-                                            }
-                                        }
-                                    }
+                                statementVm.broadCastAuth.fetchResult(compositionRoot.uiControllerApp,{ result->
+                                    webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${result?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_APP_STATUS}\"}}")
+                                },{isClick ->  })
                             }
                         }
                     }
@@ -193,13 +141,15 @@ class StateMentFragment : BaseFragment(R.layout.fragment_state_ment) {
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     super.onFailure(webSocket, t, response)
                 }
+
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                     super.onClosed(webSocket, code, reason)
-                    webSocket.close(code,reason)
+                    webSocket.close(1000, null);
                 }
             }
             webSocketApp = client.newWebSocket(request,listener)
             client.dispatcher.executorService.shutdown()
+
         }catch (e:Exception){
             e.printStackTrace()
         }

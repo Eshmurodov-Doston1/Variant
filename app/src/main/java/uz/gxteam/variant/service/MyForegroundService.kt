@@ -23,6 +23,7 @@ import uz.gxteam.variant.MainActivity
 import uz.gxteam.variant.R
 import uz.gxteam.variant.interceptor.MySharedPreference
 import uz.gxteam.variant.repository.stateMent.StateMentRepository
+import uz.gxteam.variant.resourse.ResponseState
 import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.connectSocket.ConnectSocket
 import uz.gxteam.variant.socket.dataSocket.DataSocket
@@ -84,10 +85,12 @@ class MyForegroundService:Service() {
                             val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
                             GlobalScope.launch(Dispatchers.IO){
                                 stateMentRepository.broadCastingAuth(SendSocketData("${AppConstant.CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                                    .collect{
-                                        if (it.isSuccessful){
-                                            webSocket.send(" {\"${AppConstant.WST_EVENT}\":\"${AppConstant.PUSHER_WST}:${AppConstant.SUBSCRIBE_WST}\",\"${AppConstant.WST_DATA}\":{\"${AppConstant.AUTH_WST}\":\"${it.body()?.auth}\",\"${AppConstant.WST_CHANNEL}\":\"${AppConstant.CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
-                                            count++
+                                    .collect{ response->
+                                        when(response){
+                                            is ResponseState.Success->{
+                                                webSocket.send(" {\"${AppConstant.WST_EVENT}\":\"${AppConstant.PUSHER_WST}:${AppConstant.SUBSCRIBE_WST}\",\"${AppConstant.WST_DATA}\":{\"${AppConstant.AUTH_WST}\":\"${response.data?.auth}\",\"${AppConstant.WST_CHANNEL}\":\"${AppConstant.CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
+                                                count++
+                                            }
                                         }
                                     }
                             }

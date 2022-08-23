@@ -21,7 +21,6 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            listenerActivity.hideLoading()
             isViewCreate = true
             viewPager2.registerOnPageChangeCallback(object:ViewPager2.OnPageChangeCallback(){
                 override fun onPageSelected(position: Int) {

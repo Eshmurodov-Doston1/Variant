@@ -17,6 +17,9 @@
     <color name="radio_button_back">#FFFFFFFF</color>
     <color name="textColor">#FFFFFFFF</color>
     <color name="button_back">#7000FF</color>
+    <color name="line_storce_color">#FFFFFFFF</color>
+    <color name="ok_btn_color">#3AC737</color>
+    <color name="no_btn_color">#FF4400</color>
     <color name="hint_color">#9F9DA1</color>
     <color name="rv_item_color">#FFFFFFFF</color>
     <color name="error_color">#F10707</color>

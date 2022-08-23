@@ -28,6 +28,7 @@ import uz.gxteam.variant.MainActivity
 import uz.gxteam.variant.R
 import uz.gxteam.variant.interceptor.MySharedPreference
 import uz.gxteam.variant.repository.stateMent.StateMentRepository
+import uz.gxteam.variant.resourse.ResponseState
 import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.connectSocket.ConnectSocket
 import uz.gxteam.variant.socket.dataSocket.DataSocket
@@ -77,10 +78,12 @@ class NotificationWork @AssistedInject constructor(
                             val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
                             GlobalScope.launch(Dispatchers.IO){
                                 stateMentRepository.broadCastingAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}", dataSocket.socket_id),"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                                    .collect{
-                                        if (it.isSuccessful){
-                                            webSocket.send("{\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.body()?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
-                                            count++
+                                    .collect{ response->
+                                        when(response){
+                                            is ResponseState.Success->{
+                                                webSocket.send("{\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${response.data?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${mySharedPreference.oldToken}\"}}")
+                                                count++
+                                            }
                                         }
                                     }
                             }

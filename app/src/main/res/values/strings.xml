@@ -31,8 +31,11 @@
     <string name="permission">Все разрешения предоставлены</string>
     <string name="gallery">Галерея</string>
     <string name="camera">Камера</string>
-
+    <string name="admission">Принятие</string>
+    <string name="cancellation">Отмен</string>
+    <string name="again">Повторить попытку</string>
     <string name="preview_area">Preview Area</string>
+    <string name="no_internet_connection">Интернет-соединение недоступно</string>
 
     <string name="please_wait">Пожалуйста, подождите</string>
     <string name="photo_send_success">Опубликовано</string>

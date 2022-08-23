@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.viewbinding.library.activity.viewBinding
 import androidx.activity.viewModels
@@ -11,48 +12,32 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import uz.gxteam.variant.databinding.ActivityMainBinding
 import uz.gxteam.variant.service.MyForegroundService
+import uz.gxteam.variant.utils.container.AppCompositionRoot
+import uz.gxteam.variant.utils.uiController.UiController
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import kotlin.coroutines.CoroutineContext
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
+class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope,UiController {
     private val binding: ActivityMainBinding by viewBinding()
     private val authViewModel:AuthViewModel by viewModels()
+    lateinit var appCompositionRoot: AppCompositionRoot
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         window.statusBarColor = resources.getColor(R.color.background)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-
-
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//
-//            if (!foregroundServiceRunning()){
-//                startForegroundService(Intent(this, MyForegroundService::class.java))
-//
-//            }
-//        }else{
-//            if (!foregroundServiceRunning()) {
-//                startService(Intent(this,MyForegroundService::class.java))
-//            }
-//        }
-
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment) as NavHostFragment
+        appCompositionRoot = AppCompositionRoot(this,navHostFragment.navController,this,authViewModel.mySharedPreferenceApp)
         systemUI()
-
-//        var request = OneTimeWorkRequestBuilder<NotificationWork>().build()
-//        WorkManager.getInstance(this).enqueue(request)
     }
-
-
-
-
 
     fun foregroundServiceRunning():Boolean {
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -70,15 +55,6 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
 
     override fun onNavigateUp(): Boolean {
         return findNavController(R.id.fragment).navigateUp()
-    }
-
-    override fun showLoading() {
-        binding.include.loadingView.visibility  = View.VISIBLE
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    override fun hideLoading() {
-        binding.include.loadingView.visibility  = View.GONE
     }
 
     override fun uploadLoadingShow() {
@@ -119,6 +95,19 @@ class MainActivity : AppCompatActivity(),ListenerActivity,CoroutineScope {
             window.statusBarColor =resources.getColor(R.color.statusbar_color)
             window.navigationBarColor = resources.getColor(R.color.statusbar_color)
         }
+    }
+
+    override fun showProgress() {
+        appCompositionRoot.loadingView(true)
+    }
+
+    override fun hideProgress() {
+        Log.e("HideProgressData", "hideProgress: ", )
+        appCompositionRoot.loadingView(false)
+    }
+
+    override fun error(errorCode: Long, errorMessage: String,onClick:(isClick:Boolean)->Unit) {
+        appCompositionRoot.errorDialog(errorMessage, errorCode.toInt(), authViewModel.mySharedPreferenceApp,onClick)
     }
 
 }

@@ -1,6 +1,7 @@
 package uz.gxteam.variant.interceptor
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.*
@@ -43,7 +44,9 @@ class TokenInterceptor @Inject constructor(
                     .build()
 
                 val response = client.newCall(nRequest).execute()
-
+                Log.e("ResponseUnAuthBody", response.body.toString())
+                Log.e("ResponseUnAuthMessga", response.message)
+                Log.e("ResponseUnAuthCode", response.code.toString())
                 if (response.code == SUCCESS_CODE) {
                     // Get response
                     val jsonData = response.body?.string() ?: EMPTYTEXT

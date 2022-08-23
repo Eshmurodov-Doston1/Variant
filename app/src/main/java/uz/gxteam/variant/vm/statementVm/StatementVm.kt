@@ -5,199 +5,177 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import uz.gxteam.variant.interceptor.MySharedPreference
+import uz.gxteam.variant.models.appliction.Application
 import uz.gxteam.variant.models.getApplication.reqApplication.SendToken
+import uz.gxteam.variant.models.getApplications.Applications
 import uz.gxteam.variant.models.messages.reqMessage.ReqMessage
+import uz.gxteam.variant.models.messages.resMessage.ResMessage
+import uz.gxteam.variant.models.sendMessage.resMessage.ResMessageUser
 import uz.gxteam.variant.models.sendMessage.sendMessage.SendMessageUser
+import uz.gxteam.variant.models.uploaCategory.UploadCategory
+import uz.gxteam.variant.models.uploadPhotos.UploadPhotoData
 import uz.gxteam.variant.repository.stateMent.StateMentRepository
-import uz.gxteam.variant.resourse.applicationResourse.ApplicationResourse
-import uz.gxteam.variant.resourse.broadCastAuth.BroadCastAuthResourse
-import uz.gxteam.variant.resourse.message.AllMessageResourse
-import uz.gxteam.variant.resourse.messageResourse.MessageResourse
-import uz.gxteam.variant.resourse.stateMentApplications.ApplicationsResourse
-import uz.gxteam.variant.resourse.uploadPhotos.UploadphotosResourse
+import uz.gxteam.variant.resourse.ResponseState
 import uz.gxteam.variant.socket.SendSocketData
+import uz.gxteam.variant.socket.resSocet.ResSocket
+import uz.gxteam.variant.utils.AppConstant.NO_INTERNET
 import uz.gxteam.variant.utils.NetworkHelper
 import javax.inject.Inject
+
 @HiltViewModel
 class StatementVm @Inject constructor(
     private val networkHelper: NetworkHelper,
     private val stateMentRepository: StateMentRepository,
     private val mySharedPreference: MySharedPreference
 ) :ViewModel(){
-    fun getAllApplications():StateFlow<ApplicationsResourse>{
-        var applicaitons = MutableStateFlow<ApplicationsResourse>(ApplicationsResourse.Loading)
-        viewModelScope.launch {
+
+    // TODO: getUploadCategory
+    val getUploadCategory:StateFlow<ResponseState<UploadCategory?>> get() = _getUploadCategory
+    private var _getUploadCategory = MutableStateFlow<ResponseState<UploadCategory?>>(ResponseState.Loading)
+    // TODO: getAllApplications
+    val getAllApplications:StateFlow<ResponseState<Applications?>> get() = _getAllApplications
+    private var _getAllApplications = MutableStateFlow<ResponseState<Applications?>>(ResponseState.Loading)
+    // TODO: getApplication
+    val getApplication:StateFlow<ResponseState<Application?>> get() = _getApplication
+    private var _getApplication = MutableStateFlow<ResponseState<Application?>>(ResponseState.Loading)
+    // TODO: getAllMessage
+    val getAllMessage:StateFlow<ResponseState<ResMessage?>> get() = _getAllMessage
+    private var _getAllMessage = MutableStateFlow<ResponseState<ResMessage?>>(ResponseState.Loading)
+    // TODO: broadCastAuth
+    val broadCastAuth:StateFlow<ResponseState<ResSocket?>> get() = _broadCastAuth
+    private var _broadCastAuth = MutableStateFlow<ResponseState<ResSocket?>>(ResponseState.Loading)
+    // TODO: sendMessage
+    val sendMessage:StateFlow<ResponseState<ResMessageUser?>> get() = _sendMessage
+    private var _sendMessage = MutableStateFlow<ResponseState<ResMessageUser?>>(ResponseState.Loading)
+    // TODO: getUploadPhotos
+    val getUploadPhotos:StateFlow<ResponseState<UploadPhotoData?>> get() = _getUploadPhotos
+    private var _getUploadPhotos = MutableStateFlow<ResponseState<UploadPhotoData>>(ResponseState.Loading)
+
+    // TODO: UploadFile data
+    val uploadFileData:StateFlow<ResponseState<List<Any>?>> get() = _uploadFileData
+    private var _uploadFileData = MutableStateFlow<ResponseState<List<Any>>>(ResponseState.Loading)
+
+    fun getUploadCategory(id:Int) =  viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
+                _getUploadCategory.emit(ResponseState.Loading)
                 try {
-                    val allApplications = stateMentRepository.getAllApplications("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    allApplications.catch {
-                        applicaitons.emit(ApplicationsResourse.ErrorApplications(it.message, internetConnection = true))
-                    }.collect{
-                        if (it.isSuccessful){
-                            applicaitons.emit(ApplicationsResourse.SuccessApplications(it.body()))
-                        }else{
-                            applicaitons.emit(ApplicationsResourse.ErrorApplications(it.errorBody()?.string(), internetConnection = true, errorCode = it.code()))
-                        }
-                    }
-                }catch (e:HttpException){
-                    applicaitons.emit(ApplicationsResourse.ErrorApplications(e.message, internetConnection = true, errorCode = e.code()))
+                    stateMentRepository.getUploadCategoryList(id,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                   .collect{ response-> _getUploadCategory.emit(response) }
                 }catch (e:Exception){
-                    applicaitons.emit(ApplicationsResourse.ErrorApplications(e.message, internetConnection = true, errorCode = e.hashCode()))
+                    _getUploadCategory.emit(ResponseState.Error(e.hashCode(),e.message))
                 }
             }else{
-                applicaitons.emit(ApplicationsResourse.ErrorApplications(internetConnection = false))
+                _getUploadCategory.emit(ResponseState.Error(NO_INTERNET))
             }
         }
-        return applicaitons
-    }
 
-    fun getApplication(sendToken: SendToken):StateFlow<ApplicationResourse>{
-        var application = MutableStateFlow<ApplicationResourse>(ApplicationResourse.Loading)
-        viewModelScope.launch {
+    fun getAllApplications() = viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
+                _getAllApplications.emit(ResponseState.Loading)
+                try {
+                    stateMentRepository.getAllApplications("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                    .collect{response-> _getAllApplications.emit(response) }
+                }catch (e:Exception){
+                    _getAllApplications.emit(ResponseState.Error(e.hashCode(),e.message))
+                }
+            }else{
+                _getAllApplications.emit(ResponseState.Error(NO_INTERNET))
+            }
+        }
+
+    fun getApplication(sendToken: SendToken) = viewModelScope.launch {
+            if (networkHelper.isNetworkConnected()){
+                _getApplication.emit(ResponseState.Loading)
                 try{
-                    var remoteApplication = stateMentRepository.getApplication(sendToken,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    remoteApplication.catch {
-                        application.emit(ApplicationResourse.ErrorApplication(error = it.message, internetConnection = true))
-                    }.collect{
-                        if(it.isSuccessful){
-                            application.emit(ApplicationResourse.SuccessApplication(it.body()))
-                        }else{
-                            application.emit(ApplicationResourse.ErrorApplication(error = it.errorBody()?.string(), errorCode = it.code(), internetConnection = true))
-                        }
-                    }
-                }catch (e:HttpException){
-                    application.emit(ApplicationResourse.ErrorApplication(error = e.message, errorCode = e.code(), internetConnection = true))
+                    stateMentRepository.getApplication(sendToken,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                    .collect{ response-> _getApplication.emit(response) }
                 }catch (e:Exception){
-                    application.emit(ApplicationResourse.ErrorApplication(error = e.message, errorCode = e.hashCode(), internetConnection = true))
+                    _getApplication.emit(ResponseState.Error(e.hashCode(),e.message))
                 }
 
             }else{
-                application.emit(ApplicationResourse.ErrorApplication(internetConnection = false))
+                _getApplication.emit(ResponseState.Error(NO_INTERNET))
             }
         }
-        return application
-    }
 
 
-    fun getAllMessage(reqMessage: ReqMessage):StateFlow<AllMessageResourse>{
-        var messages = MutableStateFlow<AllMessageResourse>(AllMessageResourse.Loading)
-        viewModelScope.launch {
+    fun getAllMessage(reqMessage: ReqMessage) = viewModelScope.launch {
+            if (networkHelper.isNetworkConnected()){
+                _getAllMessage.emit(ResponseState.Loading)
+                try {
+                    stateMentRepository.getAllMessage(reqMessage,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                   .collect{ response-> _getAllMessage.emit(response) }
+                }catch (e:Exception){
+                    _getAllMessage.emit(ResponseState.Error(e.hashCode(), e.message))
+                }
+            }else{
+                _getAllMessage.emit(ResponseState.Error(NO_INTERNET))
+            }
+        }
+
+    fun broadCastAuth(sendSocketData: SendSocketData) = viewModelScope.launch {
+            if (networkHelper.isNetworkConnected()){
+                _broadCastAuth.emit(ResponseState.Loading)
+                try {
+                   stateMentRepository.broadCastingAuth(sendSocketData, "${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                    .collect{ response-> _broadCastAuth.emit(response) }
+                }catch (e:Exception){
+                    _broadCastAuth.emit(ResponseState.Error(e.hashCode(),e.message))
+                }
+            }else{
+                _broadCastAuth.emit(ResponseState.Error(NO_INTERNET))
+            }
+        }
+
+
+    fun sendMessage(sendMessageUser: SendMessageUser) = viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
                 try {
-                    var remoteMessage = stateMentRepository.getAllMessage(reqMessage,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    remoteMessage.catch {
-                        messages.emit(AllMessageResourse.ErrorAllMessage(error = it.message, internetConnection = true))
-                    }.collect{
-                        if (it.isSuccessful){
-                            messages.emit(AllMessageResourse.SuccessAllMessage(it.body()))
-                        }else{
-                            messages.emit(AllMessageResourse.ErrorAllMessage(error = it.errorBody()?.string(), errorCode = it.code(), internetConnection = true))
-                        }
+                    stateMentRepository.sendMessage(sendMessageUser,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                    .collect{response->
+                       _sendMessage.emit(response)
                     }
-                }catch (e:HttpException){
-                    messages.emit(AllMessageResourse.ErrorAllMessage(error = e.message, errorCode = e.code(), internetConnection = true))
-
                 }catch (e:Exception){
-                    messages.emit(AllMessageResourse.ErrorAllMessage(error = e.message, errorCode = e.hashCode(), internetConnection = true))
+                    _sendMessage.emit(ResponseState.Error(e.hashCode(),e.message))
                 }
 
             }else{
-                messages.emit(AllMessageResourse.ErrorAllMessage(internetConnection = false))
+                _sendMessage.emit(ResponseState.Error(NO_INTERNET))
             }
         }
-        return messages
-    }
-
-    fun broadCastAuth(sendSocketData: SendSocketData):StateFlow<BroadCastAuthResourse>{
-        var broadCastAuth = MutableStateFlow<BroadCastAuthResourse>(BroadCastAuthResourse.Loading)
-        viewModelScope.launch {
-            if (networkHelper.isNetworkConnected()){
-                try {
-                    val broadCastRes = stateMentRepository.broadCastingAuth(sendSocketData, "${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    broadCastRes.catch {
-                        broadCastAuth.emit(BroadCastAuthResourse.ErrorBroadCast(error = it.message,internetConnection = true))
-                    }.collect{
-                        if (it.isSuccessful){
-                            broadCastAuth.emit(BroadCastAuthResourse.SuccessBroadCast(it.body()))
-                        }else{
-                            broadCastAuth.emit(BroadCastAuthResourse.ErrorBroadCast(error = it.errorBody()?.string(), errorCode = it.code(),internetConnection = true))
-                        }
-                    }
-                }catch (e:HttpException){
-                    broadCastAuth.emit(BroadCastAuthResourse.ErrorBroadCast(error =e.message, errorCode = e.code(),internetConnection = true))
-                }catch (e:Exception){
-                    broadCastAuth.emit(BroadCastAuthResourse.ErrorBroadCast(error = e.message, errorCode = e.hashCode(),internetConnection = true))
-                }
-
-            }else{
-                broadCastAuth.emit(BroadCastAuthResourse.ErrorBroadCast(internetConnection = false))
-            }
-        }
-        return broadCastAuth
-    }
 
 
 
-    fun sendMessage(sendMessageUser: SendMessageUser):StateFlow<MessageResourse>{
-        var message = MutableStateFlow<MessageResourse>(MessageResourse.Loading)
-        viewModelScope.launch {
-            if (networkHelper.isNetworkConnected()){
-                try {
-                    var remoteSendMessage = stateMentRepository.sendMessage(sendMessageUser,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    remoteSendMessage.catch {
-                        message.emit(MessageResourse.ErrorMessage(it.message,true))
-                    }.collect{
-                        if (it.isSuccessful){
-                            message.emit(MessageResourse.SuccessMessage(it.body()))
-                        }else{
-                            message.emit(MessageResourse.ErrorMessage(error = it.errorBody()?.string(),errorCode = it.code(),internetConnection = true))
-                        }
-                    }
-                }catch (e:HttpException){
-                    message.emit(MessageResourse.ErrorMessage(error = e.message(),errorCode = e.code(),internetConnection = true))
-                }catch (e:Exception){
-                    message.emit(MessageResourse.ErrorMessage(error = e.message,errorCode = e.hashCode(),internetConnection = true))
-                }
-
-            }else{
-                message.emit(MessageResourse.ErrorMessage(internetConnection = false))
-            }
-        }
-        return message
-    }
-
-
-    fun getUploadPhotos(sendToken: SendToken):StateFlow<UploadphotosResourse>{
-        var uploadPhotos = MutableStateFlow<UploadphotosResourse>(UploadphotosResourse.Loading)
-        viewModelScope.launch {
+    fun getUploadPhotos(sendToken: SendToken) = viewModelScope.launch {
             if(networkHelper.isNetworkConnected()){
+                _getUploadPhotos.emit(ResponseState.Loading)
                 try {
                     stateMentRepository.getUploadPhotos(sendToken,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                        .catch {
-                            uploadPhotos.emit(UploadphotosResourse.ErrorUploadPhotos(it.message,true))
-                        }.collect{
-                            if (it.isSuccessful){
-                                uploadPhotos.emit(UploadphotosResourse.SuccessUploadPhotos(it.body()))
-                            }else{
-                                uploadPhotos.emit(UploadphotosResourse.ErrorUploadPhotos(error = it.errorBody()?.string(),errorCode = it.code(),internetConnection = true))
-                            }
-                        }
-                }catch (e:HttpException){
-                    uploadPhotos.emit(UploadphotosResourse.ErrorUploadPhotos(error =e.message,errorCode = e.hashCode(),internetConnection = true))
+                        .collect{ response-> _getUploadPhotos.emit(response as ResponseState<UploadPhotoData>) }
                 }catch (e:Exception){
-                    uploadPhotos.emit(UploadphotosResourse.ErrorUploadPhotos(error = e.message,errorCode = e.hashCode(),internetConnection = true))
+                    _getUploadPhotos.emit(ResponseState.Error(e.hashCode(),e.message))
                 }
 
             }else{
-                uploadPhotos.emit(UploadphotosResourse.ErrorUploadPhotos(internetConnection = false))
+                _getUploadPhotos.emit(ResponseState.Error(NO_INTERNET))
             }
         }
-        return uploadPhotos
+
+
+    fun getUploadData(sendToken: SendToken,id: Int) = viewModelScope.launch {
+        if(networkHelper.isNetworkConnected()){
+            _uploadFileData.emit(ResponseState.Loading)
+           try {
+               stateMentRepository.getUploadData(sendToken,"${mySharedPreference.tokenType} ${mySharedPreference.accessToken}",id)
+                   .collect{response-> _uploadFileData.emit(response)}
+           }catch (e:Exception){
+               _uploadFileData.emit(ResponseState.Error(e.hashCode(),e.message))
+           }
+        }else{
+            _uploadFileData.emit(ResponseState.Error(NO_INTERNET))
+        }
     }
 
     fun getShared() =  mySharedPreference

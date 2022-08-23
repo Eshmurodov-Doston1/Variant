@@ -1,11 +1,9 @@
 package uz.gxteam.variant.ui.chatView
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
 import androidx.fragment.app.viewModels
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -21,16 +19,11 @@ import okio.ByteString
 import uz.gxteam.variant.R
 import uz.gxteam.variant.adapters.chatListAdapter.chat.ChatAdapter
 import uz.gxteam.variant.databinding.FragmentChatBinding
-import uz.gxteam.variant.errors.errorInternet.errorNoClient
-import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.models.getApplications.DataApplication
 import uz.gxteam.variant.models.messages.reqMessage.ReqMessage
 import uz.gxteam.variant.models.messages.resMessage.Message
 import uz.gxteam.variant.models.sendMessage.sendMessage.SendMessageUser
 import uz.gxteam.variant.models.userData.UserData
-import uz.gxteam.variant.resourse.broadCastAuth.BroadCastAuthResourse
-import uz.gxteam.variant.resourse.message.AllMessageResourse
-import uz.gxteam.variant.resourse.messageResourse.MessageResourse
 import uz.gxteam.variant.socket.SendSocketData
 import uz.gxteam.variant.socket.connectSocket.ConnectSocket
 import uz.gxteam.variant.socket.dataSocket.DataSocket
@@ -45,17 +38,15 @@ import uz.gxteam.variant.utils.AppConstant.MINUS_TWO
 import uz.gxteam.variant.utils.AppConstant.ONE
 import uz.gxteam.variant.utils.AppConstant.PUSHER_WST
 import uz.gxteam.variant.utils.AppConstant.SUBSCRIBE_WST
-import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
 import uz.gxteam.variant.utils.AppConstant.WEBSOCKET_URL
 import uz.gxteam.variant.utils.AppConstant.WST_CHANNEL
 import uz.gxteam.variant.utils.AppConstant.WST_DATA
 import uz.gxteam.variant.utils.AppConstant.WST_EVENT
 import uz.gxteam.variant.utils.AppConstant.ZERO
+import uz.gxteam.variant.utils.fetchResult
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import uz.gxteam.variant.vm.statementVm.StatementVm
 import uz.gxteam.variant.workManager.NotificationWork
-import java.lang.Exception
-import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
 class ChatFragment : BaseFragment(R.layout.fragment_chat) {
@@ -94,29 +85,13 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
             sendText.setOnClickListener {
                  val message = text.text.toString().trim()
                 if (message.isNotBlank() && message.isNotEmpty()){
+                    stamentVm.sendMessage(SendMessageUser(message, param3?.token.toString()))
                     launch {
-                        stamentVm.sendMessage(SendMessageUser(message, param3?.token.toString()))
-                            .collect{
-                                when(it){
-                                    is MessageResourse.SuccessMessage->{
-                                        text.text.clear()
-                                    }
-                                    is MessageResourse.ErrorMessage->{
-                                        if(it.internetConnection==true){
-                                            if (it.errorCode==UNAUTHCODE){
-                                                var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
-                                                    .build()
-                                                var bundle = Bundle()
-                                                findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                            }else{
-                                                errorNoClient(requireContext(),it.errorCode?:ZERO)
-                                            }
-                                        }else{
-                                            noInternet(requireContext())
-                                        }
-                                    }
-                                }
-                            }
+                        stamentVm.sendMessage.fetchResult(compositionRoot.uiControllerApp,{ result->
+                            text.text.clear()
+                        },{ isClick ->
+
+                        })
                     }
                 }
             }
@@ -130,39 +105,16 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
         userId = userData.id
         binding.apply {
             textUser.text = param3?.full_name
+            stamentVm.getAllMessage(ReqMessage(param3?.token.toString()))
             launch {
-                stamentVm.getAllMessage(ReqMessage(param3?.token.toString()))
-                    .collect{
-                    when(it){
-                        is AllMessageResourse.Loading->{
-                            spinKit.visibility = View.VISIBLE
-                        }
-                        is AllMessageResourse.SuccessAllMessage->{
-                            chatAdapter = ChatAdapter(userId)
-                            listMessage = ArrayList()
-                            listMessage.addAll(it.resMessage?.messages?: emptyList())
-                            spinKit.visibility = View.GONE
-                            chatAdapter.submitList(listMessage)
-                            rvChat.adapter = chatAdapter
-                        }
-                        is AllMessageResourse.ErrorAllMessage->{
-                            spinKit.visibility = View.GONE
-                            if (it.internetConnection==true){
-                                if (it.errorCode==UNAUTHCODE){
-                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
-                                        .build()
-                                    var bundle = Bundle()
-                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                    authViewModel.getSharedPreference().clear()
-                                }else{
-                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
-                                }
-                            }else{
-                                noInternet(requireContext())
-                            }
-                        }
-                    }
-                }
+              stamentVm.getAllMessage.fetchResult(compositionRoot.uiControllerApp,{ result->
+                  chatAdapter = ChatAdapter(userId)
+                  listMessage = ArrayList()
+                  listMessage.addAll(result?.messages?: emptyList())
+                  spinKit.visibility = View.GONE
+                  chatAdapter.submitList(listMessage)
+                  rvChat.adapter = chatAdapter
+              },{isClick ->  })
             }
         }
     }
@@ -179,29 +131,12 @@ class ChatFragment : BaseFragment(R.layout.fragment_chat) {
                     val socketData = gson.fromJson(text, ConnectSocket::class.java)
                     if (count==ZERO){
                         val dataSocket = gson.fromJson(socketData.data, DataSocket::class.java)
+                        stamentVm.broadCastAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${param3?.token}", dataSocket.socket_id))
                         launch {
-                            stamentVm.broadCastAuth(SendSocketData("${CHAT_MEW_MESSAGE}.${param3?.token}", dataSocket.socket_id))
-                                .collect{
-                                    when(it){
-                                        is BroadCastAuthResourse.SuccessBroadCast->{
-                                            webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${it.resSocket?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${param3?.token}\"}}")
-                                            count++
-                                        }
-                                        is BroadCastAuthResourse.ErrorBroadCast->{
-                                            if (it.internetConnection==true){
-                                                if (it.errorCode== UNAUTHCODE){
-                                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
-                                                    var bundle = Bundle()
-                                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                                }else{
-                                                    errorNoClient(requireContext(),it.errorCode?:ZERO)
-                                                }
-                                            }else{
-                                                noInternet(requireContext())
-                                            }
-                                        }
-                                    }
-                                }
+                           stamentVm.broadCastAuth.fetchResult(compositionRoot.uiControllerApp,{ result->
+                               webSocket.send(" {\"${WST_EVENT}\":\"${PUSHER_WST}:${SUBSCRIBE_WST}\",\"${WST_DATA}\":{\"${AUTH_WST}\":\"${result?.auth}\",\"${WST_CHANNEL}\":\"${CHAT_MEW_MESSAGE}.${param3?.token}\"}}")
+                               count++
+                           },{isClick ->  })
                         }
                     }else{
                         if (socketData.data!=null){

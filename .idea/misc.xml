@@ -5,10 +5,13 @@
       <map>
         <entry key="../../.gradle/caches/transforms-3/210f82b83e475669f3820d7657e60d6c/transformed/material-1.5.0/res/layout/mtrl_picker_fullscreen.xml" value="0.260546875" />
         <entry key="app/src/main/res/drawable-v24/clouse_account.xml" value="0.237" />
+        <entry key="app/src/main/res/drawable-v24/dialog_cancel_btn.xml" value="0.1745" />
         <entry key="app/src/main/res/drawable-v24/ic_baseline_message_24.xml" value="0.237" />
         <entry key="app/src/main/res/drawable-v24/ic_variant_logo.xml" value="0.108" />
         <entry key="app/src/main/res/drawable-v24/settings.xml" value="0.237" />
+        <entry key="app/src/main/res/drawable/bac_type.xml" value="0.1745" />
         <entry key="app/src/main/res/drawable/back_settings.xml" value="0.22" />
+        <entry key="app/src/main/res/drawable/button_back.xml" value="0.1995" />
         <entry key="app/src/main/res/drawable/chat_back_from.xml" value="0.22" />
         <entry key="app/src/main/res/drawable/chat_back_to.xml" value="0.237" />
         <entry key="app/src/main/res/drawable/custom_switch.xml" value="0.1765" />
@@ -37,13 +40,14 @@
         <entry key="app/src/main/res/drawable/upload.xml" value="0.237" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/color_dialog.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/create_document.xml" value="0.165" />
         <entry key="app/src/main/res/layout/dialog_camera.xml" value="0.25" />
         <entry key="app/src/main/res/layout/dialog_parol.xml" value="0.25" />
         <entry key="app/src/main/res/layout/error_dialog.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_auth.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_chat.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/fragment_chat_list.xml" value="0.260546875" />
-        <entry key="app/src/main/res/layout/fragment_generate.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragment_generate.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_lock.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_main.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.260546875" />
@@ -54,16 +58,19 @@
         <entry key="app/src/main/res/layout/item_chat.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_chat_from.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/item_chat_to.xml" value="0.260546875" />
+        <entry key="app/src/main/res/layout/item_create_request.xml" value="0.165" />
         <entry key="app/src/main/res/layout/item_lock.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_upload.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_view_pager.xml" value="0.260546875" />
+        <entry key="app/src/main/res/layout/loading_view.xml" value="0.252734375" />
         <entry key="app/src/main/res/layout/log_out.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/no_internet.xml" value="0.260546875" />
         <entry key="app/src/main/res/layout/upload_loading.xml" value="0.125" />
         <entry key="app/src/main/res/menu/bottom_navigation.xml" value="0.25" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.237" />
         <entry key="app/src/main/res/xml/file_path.xml" value="0.135546875" />
+        <entry key="app/src/main/res/xml/network.xml" value="0.253515625" />
       </map>
     </option>
   </component>

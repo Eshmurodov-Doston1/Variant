@@ -1,19 +1,20 @@
 package uz.gxteam.variant.vm.authViewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okio.IOException
 import retrofit2.HttpException
 import uz.gxteam.variant.interceptor.MySharedPreference
 import uz.gxteam.variant.models.auth.reqAuth.ReqAuth
+import uz.gxteam.variant.models.auth.resAuth.ResAuth
+import uz.gxteam.variant.models.logOut.LogOut
 import uz.gxteam.variant.repository.authRepository.AuhtRepository
-import uz.gxteam.variant.resourse.authResourse.AuthResourse
-import uz.gxteam.variant.resourse.logOutResourse.LogOutResourse
-import uz.gxteam.variant.resourse.userResourse.UserDataResourse
+import uz.gxteam.variant.resourse.ResponseState
+import uz.gxteam.variant.utils.AppConstant.NO_INTERNET
 import uz.gxteam.variant.utils.NetworkHelper
 import javax.inject.Inject
 
@@ -23,100 +24,75 @@ class AuthViewModel @Inject constructor(
     private val networkHelper: NetworkHelper,
     private val mySharedPreference: MySharedPreference
 ):ViewModel() {
-    fun authApp(reqAuth: ReqAuth):StateFlow<AuthResourse>{
-        var auth = MutableStateFlow<AuthResourse>(AuthResourse.Loading)
-        viewModelScope.launch {
+    val mySharedPreferenceApp get() = mySharedPreference
+    // TODO: auth Variant
+    val authVariant:StateFlow<ResponseState<ResAuth?>> get() = _authVariant
+    private var _authVariant = MutableStateFlow<ResponseState<ResAuth?>>(ResponseState.Loading)
+
+
+    // TODO: User Data
+    val userData:StateFlow<ResponseState<uz.gxteam.variant.models.userData.UserData?>> get() = _userData
+    private var _userData = MutableStateFlow<ResponseState<uz.gxteam.variant.models.userData.UserData?>>(ResponseState.Loading)
+
+    // TODO: LogOut
+    val logOut:StateFlow<ResponseState<LogOut?>> get() = _logOut
+    private var _logOut = MutableStateFlow<ResponseState<LogOut?>>(ResponseState.Loading)
+
+
+    fun authApp(reqAuth: ReqAuth) = viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
+                _authVariant.emit(ResponseState.Loading)
                 try {
-                    authRepository.authVariant(reqAuth).catch {
-                        auth.emit(AuthResourse.ErrorAuth(error = it.message,internetConnection = true))
-                    }.collect {
-                        if (it.isSuccessful){
-                            auth.emit(AuthResourse.SuccessAuth(it.body()))
-                            mySharedPreference.accessToken = it.body()?.access_token
-                            mySharedPreference.refreshToken = it.body()?.refresh_token
-                            mySharedPreference.tokenType = it.body()?.token_type
-                        }else{
-                            auth.emit(AuthResourse.ErrorAuth(error = it.errorBody()?.string().toString(),internetConnection = true, errorCode = it.code()))
-                        }
+                    authRepository.authVariant(reqAuth).collect { response->
+                        _authVariant.emit(response)
                     }
                 }catch (e:IOException){
-                    auth.emit(AuthResourse.ErrorAuth(internetConnection = false))
+                    _authVariant.emit(ResponseState.Error(e.hashCode(),e.message))
                 }catch (e:HttpException){
-                    auth.emit(AuthResourse.ErrorAuth(error = e.message,internetConnection = true, errorCode = e.code()))
+                    _authVariant.emit(ResponseState.Error( e.hashCode(),e.message))
                 }catch (e:Exception){
-                    auth.emit(AuthResourse.ErrorAuth(error = e.message,internetConnection = true, errorCode = hashCode()))
+                    _authVariant.emit(ResponseState.Error( hashCode(), e.message))
                 }
             }else{
-                auth.emit(AuthResourse.ErrorAuth(internetConnection = false))
+                _authVariant.emit(ResponseState.Error(NO_INTERNET))
             }
         }
-        return auth
-    }
+
 
     fun getSharedPreference():MySharedPreference{
         return mySharedPreference
     }
 
-    fun getUserData():StateFlow<UserDataResourse>{
-        var userData = MutableStateFlow<UserDataResourse>(UserDataResourse.Loading)
-        viewModelScope.launch {
+    fun getUserData() = viewModelScope.launch {
             if (networkHelper.isNetworkConnected()){
                 try {
-                    var remoteUser = authRepository.userData("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    remoteUser.catch {
-                        userData.emit(UserDataResourse.ErrorUserResourse(error = it.message,internetConnection = true))
-                    }.collect{
-                        if (it.isSuccessful){
-                            it.body().let {
-                                userData.emit(UserDataResourse.SuccessUserResourse(it))
-                            }
-                        }else{
-                            userData.emit(UserDataResourse.ErrorUserResourse(error = it.errorBody()?.string(),internetConnection = true, errorCode = it.code()))
-                        }
-                    }
-                }catch (e:HttpException){
-                    userData.emit(UserDataResourse.ErrorUserResourse(error = e.message,internetConnection = true, errorCode = e.code()))
+                  authRepository.userData("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                        .collect{ response-> _userData.emit(response) }
                 }catch (e:Exception){
-                    userData.emit(UserDataResourse.ErrorUserResourse(error = e.message,internetConnection = true, errorCode = e.hashCode()))
+                    _userData.emit(ResponseState.Error(e.hashCode(),e.message))
                 }
 
 
             }else{
-                userData.emit(UserDataResourse.ErrorUserResourse(internetConnection = false))
+                _userData.emit(ResponseState.Error(NO_INTERNET))
             }
         }
-        return userData
-    }
 
 
-    fun logOut():StateFlow<LogOutResourse>{
-        var logOut = MutableStateFlow<LogOutResourse>(LogOutResourse.Loading)
-        viewModelScope.launch {
-            try {
-
+    fun logOut() = viewModelScope.launch {
                 if (networkHelper.isNetworkConnected()){
-                    var remoteLogout = authRepository.logOut("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
-                    remoteLogout.catch {
-                        logOut.emit(LogOutResourse.ErrorLogOut(error = it.message,internetConnection = true))
-                    }.collect{
-                        if (it.isSuccessful){
-                            mySharedPreference.clear()
-                            logOut.emit(LogOutResourse.SuccessLogOut(it.body()))
-                        }else{
-                            logOut.emit(LogOutResourse.ErrorLogOut(error = it.errorBody()?.string(),internetConnection = true, errorCode = it.code()))
-                        }
+                    try {
+                        authRepository.logOut("${mySharedPreference.tokenType} ${mySharedPreference.accessToken}")
+                            .collect{response->
+                                _logOut.emit(response)
+                            }
+                    }catch (e:Exception){
+                        _logOut.emit(ResponseState.Error(e.hashCode(),e.message))
                     }
                 }else{
-                    logOut.emit(LogOutResourse.ErrorLogOut(internetConnection = false))
+                    _logOut.emit(ResponseState.Error(NO_INTERNET))
                 }
-            }catch (e:HttpException){
-                logOut.emit(LogOutResourse.ErrorLogOut(error = e.message,internetConnection = true, errorCode = e.code()))
-            }catch (e:Exception){
-                logOut.emit(LogOutResourse.ErrorLogOut(error = e.message,internetConnection = true, errorCode = e.hashCode()))
-            }
+
 
         }
-        return logOut
-    }
 }

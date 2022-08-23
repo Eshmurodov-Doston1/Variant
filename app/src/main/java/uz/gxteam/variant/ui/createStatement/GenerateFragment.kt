@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.viewbinding.library.fragment.viewBinding
@@ -16,8 +17,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.viewModels
-import androidx.navigation.NavOptions
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,20 +38,21 @@ import net.gotev.uploadservice.protocols.multipart.MultipartUploadRequest
 import uz.gxteam.variant.BuildConfig
 import uz.gxteam.variant.BuildConfig.BASE_URL
 import uz.gxteam.variant.R
+import uz.gxteam.variant.adapters.category_adapter.CategoryAdapter
 import uz.gxteam.variant.adapters.imageViewPagerAdapter.ViewPagerAdapter
 import uz.gxteam.variant.adapters.uploadAdapter.UploadAdapter
+import uz.gxteam.variant.databinding.CreateDocumentBinding
 import uz.gxteam.variant.databinding.DialogCameraBinding
-import uz.gxteam.variant.databinding.FragmentGenerateBinding
 import uz.gxteam.variant.databinding.ImageDialogBinding
-import uz.gxteam.variant.errors.errorInternet.errorNoClient
 import uz.gxteam.variant.errors.errorInternet.messageError
-import uz.gxteam.variant.errors.errorInternet.noInternet
 import uz.gxteam.variant.errors.uploadError.ErrorUpload
+import uz.gxteam.variant.models.appliction.Application
 import uz.gxteam.variant.models.getApplication.reqApplication.SendToken
 import uz.gxteam.variant.models.getApplications.DataApplication
+import uz.gxteam.variant.models.uploaCategory.UploadCategory
+import uz.gxteam.variant.models.uploaCategory.UploadCategoryItem
+import uz.gxteam.variant.models.uploadPhotos.UploadPhotoData
 import uz.gxteam.variant.models.uploadPhotos.UploadPhotos
-import uz.gxteam.variant.resourse.applicationResourse.ApplicationResourse
-import uz.gxteam.variant.resourse.uploadPhotos.UploadphotosResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
 import uz.gxteam.variant.utils.AppConstant.ACCEPT
 import uz.gxteam.variant.utils.AppConstant.API_UPLOAD
@@ -66,6 +67,8 @@ import uz.gxteam.variant.utils.AppConstant.TOKEN
 import uz.gxteam.variant.utils.AppConstant.TYPE
 import uz.gxteam.variant.utils.AppConstant.TYPETOKEN
 import uz.gxteam.variant.utils.AppConstant.VALUEUPDATE
+import uz.gxteam.variant.utils.fetchResult
+import uz.gxteam.variant.utils.parseJsonInClass
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 import uz.gxteam.variant.vm.statementVm.StatementVm
 import java.io.File
@@ -73,12 +76,12 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 
-
 @AndroidEntryPoint
-class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
+class GenerateFragment : BaseFragment(R.layout.create_document) {
     private var param3: DataApplication? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,11 +91,13 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
         }
     }
 
-    private val binding:FragmentGenerateBinding by viewBinding()
+    private val binding:CreateDocumentBinding by viewBinding()
     lateinit var photoURI:Uri
     lateinit var imagePath:String
+    private var appId = -2
     private val authViewModel:AuthViewModel by viewModels()
-    private val stateMentVm:StatementVm by viewModels()
+    private val statementVm:StatementVm by viewModels()
+    private lateinit var categoryAdapter:CategoryAdapter
     lateinit var uploadAdapter:UploadAdapter
     lateinit var viewPagerAdapter:ViewPagerAdapter
     var uploadPhotosApp:UploadPhotos?=null
@@ -100,160 +105,168 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+           dataCategory()
+
+            swipeRefresh.setOnRefreshListener {
+                loadViewUpload()
+            }
+
+            loadViewUpload()
+        }
+    }
 
 
 
-            unclickButton()
-
-
-            uploadBtn.setOnClickListener {
-                PermissionX.init(activity)
-                    .permissions(Manifest.permission.CAMERA)
-                    .onExplainRequestReason { scope, deniedList ->
-                        scope.showRequestReasonDialog(deniedList, getString(R.string.no_help), "OK", getString(R.string.cancel))
-                    }.request { allGranted, grantedList, deniedList ->
-                        if (allGranted) {
-                            var dialog = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
-                            val create = dialog.create()
-                            val dialogCameraBinding = DialogCameraBinding.inflate(LayoutInflater.from(requireContext()), null, false)
-                            create.setView(dialogCameraBinding.root)
-                            dialogCameraBinding.camera.setOnClickListener {
-                                var imageFile = createImageFile()
-                                photoURI = FileProvider.getUriForFile(root.context,BuildConfig.APPLICATION_ID,imageFile)
-                                getTakeImageContent.launch(photoURI)
-                                create.dismiss()
-                            }
-                            dialogCameraBinding.gallery.setOnClickListener {
-                                picImageForNewGallery()
-                                create.dismiss()
-                            }
-                            dialogCameraBinding.close.setOnClickListener {
-                                create.dismiss()
-                            }
-                            create.show()
-                        } else {
-                            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID)))
+    fun dataCategory(){
+        binding.apply {
+            statementVm.getUploadCategory((param3?.client_id?:0L).toInt())
+            launch {
+                statementVm.getUploadCategory.fetchResult(compositionRoot.uiControllerApp,{ result->
+                    categoryAdapter = CategoryAdapter((result?: emptyList()) as ArrayList<UploadCategoryItem>){ item, position ->
+                        if(item.is_uploaded==1){
+                            compositionRoot.uiControllerApp.error(1001,item.title){ isClick -> }
+                        }else{
+                            appId = item.id
+                            permissionAndUploadFile()
                         }
                     }
+                    rvData.adapter = categoryAdapter
+                },{isClick ->  })
             }
-            status.text = param3?.status_title
-            loadViewUpload()
+
+        }
+    }
+
+    fun permissionAndUploadFile(){
+        binding.apply {
+            PermissionX.init(activity)
+                .permissions(Manifest.permission.CAMERA)
+                .onExplainRequestReason { scope, deniedList ->
+                    scope.showRequestReasonDialog(deniedList, getString(R.string.no_help), "OK", getString(R.string.cancel))
+                }.request { allGranted, grantedList, deniedList ->
+                    if (allGranted) {
+                        var dialog = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
+                        val create = dialog.create()
+                        val dialogCameraBinding = DialogCameraBinding.inflate(LayoutInflater.from(requireContext()), null, false)
+                        create.setView(dialogCameraBinding.root)
+                        dialogCameraBinding.camera.setOnClickListener {
+                            var imageFile = createImageFile()
+                            photoURI = FileProvider.getUriForFile(root.context,BuildConfig.APPLICATION_ID,imageFile)
+                            getTakeImageContent.launch(photoURI)
+                            create.dismiss()
+                        }
+                        dialogCameraBinding.gallery.setOnClickListener {
+                            picImageForNewGallery()
+                            create.dismiss()
+                        }
+                        dialogCameraBinding.close.setOnClickListener {
+                            create.dismiss()
+                        }
+                        create.show()
+                    } else {
+                        startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID)))
+                    }
+                }
         }
     }
 
     private fun loadViewUpload() {
         binding.apply {
+            statementVm.getUploadPhotos(SendToken(param3?.token.toString()))
             launch {
-                stateMentVm.getUploadPhotos(SendToken(param3?.token.toString())).collect{
-                    when(it){
-                        is UploadphotosResourse.Loading->{
-                            spinKit.visibility = View.VISIBLE
-                        }
-                        is UploadphotosResourse.SuccessUploadPhotos->{
-                            spinKit.visibility = View.GONE
-                           unclickButton()
+                statementVm.getUploadPhotos.fetchResult(compositionRoot.uiControllerApp,{ result->
+                    uploadAdapter(result?: emptyList())
+                    swipeRefresh.isRefreshing = false
+                    if (result?.isEmpty() == true){
+                        animationEmpty.visibility = View.VISIBLE
+                    }else{
+                        animationEmpty.visibility = View.GONE
+                    }
+                    uploadAdapter.submitList(result)
+                    rvFile.adapter = uploadAdapter
+                    rvFile.isNestedScrollingEnabled = false
+                    listenerActivity.uploadLoadingHide()
+                },{isClick -> })
 
-                            uploadAdapter = UploadAdapter(object:UploadAdapter.OnIemLongClick{
-                                override fun onUploadClick(
-                                    uploadPhotos: UploadPhotos,
-                                    position: Int
-                                ) {
-                                    var alertDialog = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
-                                    val create = alertDialog.create()
-                                    var imageDialogBinding = ImageDialogBinding.inflate(LayoutInflater.from(requireContext()),null,false)
-                                    create.setView(imageDialogBinding.root)
-                                    viewPagerAdapter = ViewPagerAdapter(object:ViewPagerAdapter.OnItemClickListener{
-                                        override fun onItemClickUpdate(
-                                            uploadPhotos: UploadPhotos,
-                                            position: Int
-                                        ) {
-                                            PermissionX.init(activity)
-                                                .permissions(Manifest.permission.CAMERA)
-                                                .onExplainRequestReason { scope, deniedList ->
-                                                    scope.showRequestReasonDialog(deniedList, getString(R.string.no_help), "OK", getString(R.string.cancel))
-                                                }.request { allGranted, grantedList, deniedList ->
-                                                    var dialogApp = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
-                                                    val create1 = dialogApp.create()
-                                                    var cameraDialogBinding = DialogCameraBinding.inflate(LayoutInflater.from(requireContext()),null,false)
-                                                    create1.setView(cameraDialogBinding.root)
-                                                    uploadPhotosApp = uploadPhotos
-                                                    cameraDialogBinding.camera.setOnClickListener {
-                                                        var imageFile = createImageFile()
-                                                        photoURI = FileProvider.getUriForFile(requireContext(),BuildConfig.APPLICATION_ID,imageFile)
-                                                        getTakeImageContentUpdate.launch(photoURI)
-                                                        create1.dismiss()
-                                                        create.dismiss()
-                                                    }
-                                                    cameraDialogBinding.gallery.setOnClickListener {
-                                                        picImageForNewGalleryUpdate()
-                                                        create1.dismiss()
-                                                        create.dismiss()
-                                                    }
-                                                    cameraDialogBinding.close.setOnClickListener {
-                                                        create1.dismiss()
-                                                    }
-                                                    create1.show()
-                                                }
-                                        }
-                                    },it.uploadPhotos?: emptyList())
+            }
+        }
+    }
 
-                                    imageDialogBinding.viewPager2.setPageTransformer { page, position ->
-                                        if (position < -1){
-                                            page.alpha = 0F
 
-                                        }
-                                        else if (position <= 0) {
-                                            page.alpha = 1F
-                                            page.pivotX = page.width.toFloat()
-                                            page.rotationY = -90 * abs(position)
-
-                                        }
-                                        else if (position <= 1){
-                                            page.alpha = 1F
-                                            page.pivotX = 0F
-                                            page.rotationY = 90 * Math.abs(position)
-
-                                        }
-                                        else {
-                                            page.alpha = 0F
-
-                                        }
+    fun uploadAdapter(result:List<UploadPhotos>){
+        binding.apply {
+            uploadAdapter = UploadAdapter(object:UploadAdapter.OnIemLongClick{
+                override fun onUploadClick(
+                    uploadPhotos: UploadPhotos,
+                    position: Int
+                ) {
+                    var alertDialog = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
+                    val create = alertDialog.create()
+                    var imageDialogBinding = ImageDialogBinding.inflate(LayoutInflater.from(requireContext()),null,false)
+                    create.setView(imageDialogBinding.root)
+                    viewPagerAdapter = ViewPagerAdapter(object:ViewPagerAdapter.OnItemClickListener{
+                        override fun onItemClickUpdate(
+                            uploadPhotos: UploadPhotos,
+                            position: Int
+                        ) {
+                            PermissionX.init(activity)
+                                .permissions(Manifest.permission.CAMERA)
+                                .onExplainRequestReason { scope, deniedList ->
+                                    scope.showRequestReasonDialog(deniedList, getString(R.string.no_help), "OK", getString(R.string.cancel))
+                                }.request { allGranted, grantedList, deniedList ->
+                                    var dialogApp = AlertDialog.Builder(requireContext(),R.style.BottomSheetDialogThem)
+                                    val create1 = dialogApp.create()
+                                    var cameraDialogBinding = DialogCameraBinding.inflate(LayoutInflater.from(requireContext()),null,false)
+                                    create1.setView(cameraDialogBinding.root)
+                                    uploadPhotosApp = uploadPhotos
+                                    cameraDialogBinding.camera.setOnClickListener {
+                                        var imageFile = createImageFile()
+                                        photoURI = FileProvider.getUriForFile(requireContext(),BuildConfig.APPLICATION_ID,imageFile)
+                                        getTakeImageContentUpdate.launch(photoURI)
+                                        create1.dismiss()
+                                        create.dismiss()
                                     }
-
-                                    imageDialogBinding.viewPager2.adapter = viewPagerAdapter
-                                    imageDialogBinding.viewPager2.setCurrentItem(position,false)
-                                    create.show()
+                                    cameraDialogBinding.gallery.setOnClickListener {
+                                        picImageForNewGalleryUpdate()
+                                        create1.dismiss()
+                                        create.dismiss()
+                                    }
+                                    cameraDialogBinding.close.setOnClickListener {
+                                        create1.dismiss()
+                                    }
+                                    create1.show()
                                 }
-                            })
-
-                            if (it.uploadPhotos?.isEmpty() == true){
-                                animationEmpty.visibility = View.VISIBLE
-                            }else{
-                                animationEmpty.visibility = View.GONE
-                            }
-                            uploadAdapter.submitList(it.uploadPhotos)
-                            rvImage.adapter = uploadAdapter
-                            rvImage.isNestedScrollingEnabled = false
-                            listenerActivity.uploadLoadingHide()
                         }
-                        is UploadphotosResourse.ErrorUploadPhotos->{
-                            spinKit.visibility = View.GONE
-                            if (it.internetConnection==true){
-                                if (it.errorCode==401){
-                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
-                                        .build()
-                                    var bundle = Bundle()
-                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                }else{
-                                    errorNoClient(requireContext(),it.errorCode?:0)
-                                }
-                            }else{
-                                noInternet(requireContext())
-                            }
+                    }, result)
+
+                    imageDialogBinding.viewPager2.setPageTransformer { page, position ->
+                        if (position < -1){
+                            page.alpha = 0F
+
+                        }
+                        else if (position <= 0) {
+                            page.alpha = 1F
+                            page.pivotX = page.width.toFloat()
+                            page.rotationY = -90 * abs(position)
+
+                        }
+                        else if (position <= 1){
+                            page.alpha = 1F
+                            page.pivotX = 0F
+                            page.rotationY = 90 * Math.abs(position)
+
+                        }
+                        else {
+                            page.alpha = 0F
+
                         }
                     }
+
+                    imageDialogBinding.viewPager2.adapter = viewPagerAdapter
+                    imageDialogBinding.viewPager2.setCurrentItem(position,false)
+                    create.show()
                 }
-            }
+            })
         }
     }
 
@@ -344,7 +357,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
 
     fun uploadImage(imagePath:String){
-        GlobalScope.launch(Dispatchers.Main) {
+        launch(Dispatchers.Main) {
             MultipartUploadRequest(context = requireContext(),serverUrl = "${BASE_URL}${API_UPLOAD}")
                 .addHeader(AUTH_STR,"${authViewModel.getSharedPreference().tokenType} ${authViewModel.getSharedPreference().accessToken}")
                 .addHeader(ACCEPT,TYPETOKEN)
@@ -376,7 +389,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                     )
                 }
                 .addParameter(TOKEN, param3?.token.toString()) //Adding text parameter to the request
-                .addParameter(TYPE, "${param3?.photo_status?.plus(1)}") //Adding text parameter to the request
+                .addParameter(TYPE, appId.toString()) //Adding text parameter to the request
                 .addFileToUpload(imagePath, PHOTO) //Adding file
                 .subscribe(requireContext(),viewLifecycleOwner, delegate = object:
                     RequestObserverDelegate {
@@ -410,7 +423,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
 
                     override fun onProgress(context: Context, uploadInfo: UploadInfo) {
-                        listenerActivity.uploadLoadingShow()
+
                     }
 
                     override fun onSuccess(
@@ -431,47 +444,23 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
     }
 
     private fun getApplicationData() {
+        statementVm.getApplication(SendToken(param3?.token.toString()))
         launch {
-            stateMentVm.getApplication(SendToken(param3?.token.toString())).
-                    collect{
-                        when(it){
-                            is ApplicationResourse.SuccessApplication->{
-                                it.application.let {
-                                    param3 = DataApplication(param3?.status,param3?.level,it?.client_id?.toLong(), it?.contract_number,it?.photo_status?.toLong(), it?.token.toString(),param3?.status_title, it?.full_name)
-                                  unclickButton()
-                                   binding.status.text = param3?.status_title
-                                }
-                            }
-                            is ApplicationResourse.ErrorApplication->{
-                             if (it.internetConnection==true){
-                                 if (it.errorCode==401){
-                                     var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
-                                         .build()
-                                     var bundle = Bundle()
-                                     findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                 }else{
-                                     errorNoClient(requireContext(),it.errorCode?:0)
-                                 }
-                             }else{
-                                 noInternet(requireContext())
-                             }
-                            }
-                        }
-                    }
+           statementVm.getApplication.fetchResult(compositionRoot.uiControllerApp,{ result->
+               result.let {
+                   param3 = DataApplication(param3?.status,param3?.level,it?.client_id?.toLong(), it?.contract_number,it?.photo_status?.toLong(), it?.token.toString(),param3?.status_title, it?.full_name)
+               }
+           },{isClick ->  })
         }
     }
 
-    fun unclickButton(){
-        if (param3?.photo_status!! >= 6){
-            binding.uploadBtn.isEnabled = false
-        }
-    }
+
 
 
 
 
     fun updateImage(imagePath:String){
-        GlobalScope.launch(Dispatchers.Main) {
+        launch(Dispatchers.Main) {
             MultipartUploadRequest(context = requireContext(),serverUrl = "${BASE_URL}${API_UPLOAD}")
                 .addHeader(AUTH_STR,"${authViewModel.getSharedPreference().tokenType} ${authViewModel.getSharedPreference().accessToken}")
                 .addHeader(ACCEPT,TYPETOKEN)
@@ -536,9 +525,7 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
 
 
 
-                    override fun onProgress(context: Context, uploadInfo: UploadInfo) {
-                        listenerActivity.uploadLoadingShow()
-                    }
+                    override fun onProgress(context: Context, uploadInfo: UploadInfo) {}
 
                     override fun onSuccess(
                         context: Context,
@@ -549,7 +536,6 @@ class GenerateFragment : BaseFragment(R.layout.fragment_generate) {
                             clearMyFiles()
                             getApplicationData()
                             loadViewUpload()
-                            listenerActivity.uploadLoadingHide()
                         }
                     }
 

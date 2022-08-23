@@ -14,12 +14,8 @@ import kotlinx.coroutines.launch
 import uz.gxteam.variant.R
 import uz.gxteam.variant.databinding.FragmentSettingsBinding
 import uz.gxteam.variant.databinding.LogOutBinding
-import uz.gxteam.variant.errors.errorInternet.errorNoClient
-import uz.gxteam.variant.errors.errorInternet.noInternet
-import uz.gxteam.variant.resourse.logOutResourse.LogOutResourse
 import uz.gxteam.variant.ui.baseFragment.BaseFragment
-import uz.gxteam.variant.utils.AppConstant.UNAUTHCODE
-import uz.gxteam.variant.utils.AppConstant.ZERO
+import uz.gxteam.variant.utils.fetchResult
 import uz.gxteam.variant.vm.authViewModel.AuthViewModel
 
 @AndroidEntryPoint
@@ -51,38 +47,15 @@ class SettingsFragment : BaseFragment(R.layout.fragment_settings) {
                 }
 
                 logOutBinding.okBtn.setOnClickListener {
+                    authViewModel.logOut()
                     launch {
-                        authViewModel.logOut().collect{
-                            when(it){
-                                is LogOutResourse.Loading->{
-                                    listenerActivity.showLoading()
-                                }
-                                is LogOutResourse.SuccessLogOut->{
-                                    listenerActivity.hideLoading()
-                                    authViewModel.getSharedPreference().clear()
-                                    var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
-                                    var bundle = Bundle()
-                                    findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                    create.dismiss()
-                                }
-                                is LogOutResourse.ErrorLogOut->{
-                                    listenerActivity.hideLoading()
-                                    if (it.internetConnection==true){
-                                        if (it.errorCode==UNAUTHCODE){
-                                            var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false)
-                                                .build()
-                                            var bundle = Bundle()
-                                            findNavController().navigate(R.id.authFragment,bundle,navOpitions)
-                                        }else{
-                                            errorNoClient(requireContext(),it.errorCode?:ZERO)
-                                        }
-                                    }else{
-                                        noInternet(requireContext())
-                                    }
-                                    create.dismiss()
-                                }
-                            }
-                        }
+                        authViewModel.logOut.fetchResult(compositionRoot.uiControllerApp,{ result->
+                            authViewModel.getSharedPreference().clear()
+                            var navOpitions = NavOptions.Builder().setPopUpTo(R.id.authFragment,false).build()
+                            var bundle = Bundle()
+                            findNavController().navigate(R.id.authFragment,bundle,navOpitions)
+                            create.dismiss()
+                        },{isClick ->  })
                     }
                 }
                 create.show()
